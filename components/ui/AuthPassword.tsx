@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styles from './AuthPassword.module.css';
 type Props = {
     label : string
@@ -9,18 +9,15 @@ export default function PasswordValidator({label,name}:Props) {
     const [password, setPassword] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [strength, setStrength] = useState(0);
 
     // Calculate password strength
-    useEffect(() => {
-        let score = 0;
-        if (password.length > 0) score += 1;
-        if (password.length >= 8) score += 1;
-        if (/[A-Z]/.test(password)) score += 1;
-        if (/[0-9]/.test(password)) score += 1;
-        if (/[^A-Za-z0-9]/.test(password)) score += 1;
-        setStrength(Math.min(score, 4));
-    }, [password]);
+    let score = 0;
+    if (password.length > 0) score += 1;
+    if (password.length >= 8) score += 1;
+    if (/[A-Z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+    const strength = Math.min(score, 4);
 
     const strengthLabels = ['Too Weak', 'Weak', 'Fair', 'Good', 'Strong'];
     const strengthColors = ['#ff4d4f', '#ff4d4f', '#faad14', '#52c41a', '#52c41a']; // Red, Red, Yellow, Green, Green
