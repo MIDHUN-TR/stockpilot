@@ -1,9 +1,13 @@
+import RegisterForm from "@/components/forms/RegisterForm";
+import Card from "@/components/ui/AuthCard";
 
 
 export default function Register(){
     return(
         <>
-        <p>This is the registeration page </p>
+        <Card>
+            {<RegisterForm/>}
+        </Card>
         </>
     )
 }
