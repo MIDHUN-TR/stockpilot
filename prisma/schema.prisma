@@ -10,11 +10,13 @@ generator client {
 datasource db {
   provider  = "postgresql"
 }
+
 enum Role {
   Admin
   Manager
   Staff
 }
+
 enum OrderStatus {
   Pending
   Processing
@@ -22,153 +24,156 @@ enum OrderStatus {
   Delivered
   Cancelled
 }
+
 enum PayementStatus {
   Pending
   Success
   Failed
   Refunded
 }
+
 enum StockMovementType {
   IN
-  OUT 
+  OUT
   ADJUSTMENT
 }
 
-model User{
-  id   Int @id @default(autoincrement())
-  name String? 
-  email String @unique
+model User {
+  id            Int      @id @default(autoincrement())
+  name          String?
+  email         String   @unique
   password_hash String
-  role Role @default(Staff)
-  status Boolean @default(false)
-  created_at DateTime @default(now())
+  role          Role     @default(Staff)
+  status        Boolean  @default(false)
+  created_at    DateTime @default(now())
 
-  order Order[]
-  auditLogs AuditLog[] @relation("AuditLogActor")
+  order                 Order[]
+  auditLogs             AuditLog[]      @relation("AuditLogActor")
   stockMovementsCreated StockMovement[] @relation("StockMovementCreator")
-  @@map("users") 
+
+  @@map("users")
 }
+
 model Tag {
-  id Int @id @default(autoincrement())
-  name String @unique
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
   products Product[]
 
   @@map("tags")
 }
 
 model Keyword {
-  id Int @id @default(autoincrement())
-  name String @unique
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
   products Product[]
 
   @@map("keywords")
 }
 
-model Product{
-  id Int @id @default(autoincrement())
-  sku String 
-  name String?
-  description String @db.VarChar(500)
-  categoryId Int @map("categories_id")
-  price Int
-  cost_price Int
-  image_url String
-  is_active Boolean @default(false)
-  created_At DateTime @default(now())
+model Product {
+  id          Int      @id @default(autoincrement())
+  sku         String
+  name        String?
+  description String   @db.VarChar(500)
+  categoryId  Int      @map("categories_id")
+  price       Int
+  cost_price  Int
+  image_url   String
+  is_active   Boolean  @default(false)
+  created_At  DateTime @default(now())
 
-  category Category @relation(fields:[categoryId],references:[id])
+  category       Category        @relation(fields: [categoryId], references: [id])
   stockMovements StockMovement[]
-  orderItems OrderItem[]
-  tags Tag[]
-  keywords Keyword[]
+  orderItems     OrderItem[]
+  tags           Tag[]
+  keywords       Keyword[]
 
   @@map("products")
 }
 
-model Category{
-  id Int @id @default(autoincrement())
-  name String?
+model Category {
+  id                 Int        @id @default(autoincrement())
+  name               String?
   parent_category_id Int?
-  parentCategory Category? @relation("CategoryParent",fields:[parent_category_id],references: [id])
-  children Category[] @relation("CategoryParent")
-  products Product[]
+  parentCategory     Category?  @relation("CategoryParent", fields: [parent_category_id], references: [id])
+  children           Category[] @relation("CategoryParent")
+  products           Product[]
 
   @@map("categories")
 }
 
-model StockMovement{
-  id Int @id @default(autoincrement())
-  productId Int @map("product_id")
+model StockMovement {
+  id            Int      @id @default(autoincrement())
+  productId     Int      @map("product_id")
   movement_type String?
-  quantity Int
-  refrence_type String? @map("refrence_type")
-  refrence_id Int? @map("refrence_id")
-  note String
-  created_by Int?
-  created_at DateTime @default(now())
+  quantity      Int
+  refrence_type String?  @map("refrence_type")
+  refrence_id   Int?     @map("refrence_id")
+  note          String
+  created_by    Int?
+  created_at    DateTime @default(now())
 
-  product Product @relation(fields:[productId],references: [id])
-  creator User? @relation("StockMovementCreator",fields:[created_by],references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  creator User?   @relation("StockMovementCreator", fields: [created_by], references: [id])
 
   @@map("stock_movements")
 }
 
 model Order {
-  id Int @id @default(autoincrement())
-  order_number Int @unique
-  userId Int @map("Users_id")
-  customer_name String 
-  total_amount Int
+  id             Int      @id @default(autoincrement())
+  order_number   Int      @unique
+  userId         Int      @map("Users_id")
+  customer_name  String
+  total_amount   Int
   payment_status Boolean
-  order_status Boolean
-  created_At DateTime @default(now())
+  order_status   Boolean
+  created_At     DateTime @default(now())
 
-  user User @relation(fields: [userId],references: [id])
-  items OrderItem[]
+  user     User        @relation(fields: [userId], references: [id])
+  items    OrderItem[]
   payments Payment[]
 
   @@map("orders")
 }
 
-model OrderItem{
-  id Int @id @default(autoincrement())
-  orderId Int @map("order_id")
-  productId Int @map("product_id")
-  quantity Int
+model OrderItem {
+  id         Int @id @default(autoincrement())
+  orderId    Int @map("order_id")
+  productId  Int @map("product_id")
+  quantity   Int
   unit_price Int
-  subtotal Int
+  subtotal   Int
 
-  order Order @relation(fields:[orderId] ,references: [id])
-  product Product @relation(fields: [productId],references: [id])
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 
   @@map("order_items")
 }
 
 model Payment {
-  id Int @id @default(autoincrement())
-  orderId Int @map("order_id")
-  provider String
+  id                  Int      @id @default(autoincrement())
+  orderId             Int      @map("order_id")
+  provider            String
   provider_payment_id String
-  amount Int
-  currency String
-  status String
-  created_at DateTime @default(now())
+  amount              Int
+  currency            String
+  status              String
+  created_at          DateTime @default(now())
 
-  order Order @relation(fields: [orderId],references: [id])
+  order Order @relation(fields: [orderId], references: [id])
 
   @@map("payments")
 }
 
-model AuditLog{
-  id Int @id @default(autoincrement())
-  actorId Int @map("actor_id")
-  action String
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  actorId     Int      @map("actor_id")
+  action      String
   entity_type String
-  entity_id Int
-  metadata Json?
-  created_at DateTime @default(now())
-  actor User? @relation("AuditLogActor",fields: [actorId],references: [id])
+  entity_id   Int
+  metadata    Json?
+  created_at  DateTime @default(now())
+  actor       User?    @relation("AuditLogActor", fields: [actorId], references: [id])
 
   @@map("audit_logs")
 }
-
