@@ -33,6 +33,7 @@ export default function PasswordValidator({label,name}:Props) {
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     placeholder={name}
+                    name={name}
                 />
                 <label className={styles.label}>{label}</label>
                 <button 
