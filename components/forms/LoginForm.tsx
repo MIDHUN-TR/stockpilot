@@ -6,6 +6,7 @@ import AuthInput from "../ui/AuthInput";
 import PasswordValidator from "../ui/AuthPassword";
 import Link from "next/link";
 
+
 export default function LoginForm(){
     async function handleSubmit(e:React.SubmitEvent<HTMLFormElement>){
         e.preventDefault()
@@ -13,11 +14,35 @@ export default function LoginForm(){
         const formData = new FormData(e.currentTarget)
 
         const data = {
-            email:formData.get("email"),
-            password:formData.get("password")
+            email:formData.get("email") as string,
+            password:formData.get("password") as string
+        }
+        console.log(data)
+
+        try{
+            const respose = await fetch('/api/auth/login',{
+                method:"POST",
+                headers:{ "Content-Type": "application/json" },
+                body:JSON.stringify(data)
+            })
+
+            
+            if(!respose.ok){
+                const errorText = await respose.text()
+                console.log("Erorr Message Details:",errorText)
+                return
+            }
+            const Out = await respose.json()
+            console.log("Data",Out)
+            
+           
+
+        }
+        catch(e:unknown){
+            console.error("Something Went wrong in frontend:",e)
         }
 
-        console.log("Login Data : ",data)
+       
 
     }
    

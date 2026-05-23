@@ -10,16 +10,31 @@ export default function RegisterForm() {
         const formData = new FormData(e.currentTarget)
 
         const data = {
-            name :formData.get("username"),
-            email:formData.get("email"),
-            password:formData.get("password"),
-            confirmPassword : formData.get("confirmpassword")
+            name :formData.get("username") as string,
+            email:formData.get("email") as string,
+            password:formData.get("password") as string,
+            confirmpassword : formData.get("confirmpassword")as string
         }
 
-        if(data.password !== data.confirmPassword){
-            alert("Password doen't matching")
+       try{
+        const response = await fetch("/api/auth/register",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify(data)    
+        })
+
+        if(!response.ok){
+            const errorText = await response.text()
+            console.log("Error Details from backend  : ",errorText)
             return
         }
+        console.log(response)
+        
+       }
+       catch(e){
+            console.log("Something Went Wrong In frontend:",e)
+            return
+       }
 
         console.log("Registered Data :",data)
         
