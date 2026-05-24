@@ -4,13 +4,15 @@ import React from "react";
 import AuthButton from "../ui/AuthButton";
 import AuthInput from "../ui/AuthInput";
 import PasswordValidator from "../ui/AuthPassword";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 
 export default function LoginForm(){
+    const router = useRouter()
     async function handleSubmit(e:React.SubmitEvent<HTMLFormElement>){
         e.preventDefault()
-
+        
         const formData = new FormData(e.currentTarget)
 
         const data = {
@@ -32,8 +34,8 @@ export default function LoginForm(){
                 console.log("Erorr Message Details:",errorText)
                 return
             }
-            const Out = await respose.json()
-            console.log("Data",Out)
+            router.push('/dashboard')
+            
             
            
 
