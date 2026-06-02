@@ -6,9 +6,12 @@ type category ={
 }
 export default async function POST(request:Request){
     try{
+        // parsing the credentials
         const body = await request.json() as category
+        // destructuring the body
         const {name,parent_category_id} = body
-
+        
+        // checking the provide parent is exist or not
         if(parent_category_id){
             const parentExits = await prisma.category.findUnique({
                 where:{id:Number(parent_category_id)}
@@ -18,6 +21,7 @@ export default async function POST(request:Request){
             }
         }
 
+        // New category is creating 
         const newCategory = await prisma.category.create({
             data:{
                 name:name,
@@ -25,6 +29,7 @@ export default async function POST(request:Request){
             }
         })
 
+        // returning the response     
         return NextResponse.json({message:"New category is created:",newCategory},{status:201})
     }
     catch(e:unknown){
