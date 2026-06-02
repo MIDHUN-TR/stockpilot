@@ -94,9 +94,18 @@ model Product {
 
 model Category {
   id                 Int        @id @default(autoincrement())
-  name               String
-  parent_category_id Int
-  parentCategory     Category   @relation("CategoryParent", fields: [parent_category_id], references: [id])
+
+
+
+
+
+
+
+
+
+  name               String     @unique
+  parent_category_id Int?
+  parentCategory     Category?  @relation("CategoryParent", fields: [parent_category_id], references: [id])
   children           Category[] @relation("CategoryParent")
   products           Product[]
 
