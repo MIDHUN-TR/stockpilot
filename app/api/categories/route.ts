@@ -29,7 +29,7 @@ export default async function POST(request:Request){
             }
         })
 
-        // returning the response     
+        // returning the response
         return NextResponse.json({message:"New category is created:",newCategory},{status:201})
     }
     catch(e:unknown){
