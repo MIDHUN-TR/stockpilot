@@ -4,7 +4,7 @@ type category ={
     name:string
     parent_category_id:number
 }
-export default async function POST(request:Request){
+export async function POST(request:Request){
     try{
         // parsing the credentials
         const body = await request.json() as category
@@ -33,7 +33,8 @@ export default async function POST(request:Request){
         return NextResponse.json({message:"New category is created:",newCategory},{status:201})
     }
     catch(e:unknown){
+        console.error("Error",e)
+        return NextResponse.json({message:"something went wrong in categories api",error:e},{status:500})
         
-        return NextResponse.json({message:"something went wrong in categories api",e},{status:500})
     }
 }
