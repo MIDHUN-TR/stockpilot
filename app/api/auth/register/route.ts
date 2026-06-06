@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
         })
         console.log(newUser)
-        return NextResponse.json({ message: "New user created", userId: newUser }, { status: 200 })
+        return NextResponse.json({ message: "New user created", userId: newUser }, { status: 201 })
         
     }
     catch (e: unknown) {
