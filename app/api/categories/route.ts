@@ -38,3 +38,15 @@ export async function POST(request:Request){
         
     }
 }
+
+export async function GET(){
+    try{
+        const Categories = await prisma.category.findMany()
+
+        return NextResponse.json({Message:"Fetched all categories",Categories},{status:200})
+    }
+    catch(e:unknown){
+        console.error("Error:",e)
+        return NextResponse.json({message:"Something went wrong in category GET api",error:e},{status:500})
+    }
+}
