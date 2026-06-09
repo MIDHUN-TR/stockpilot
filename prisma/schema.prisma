@@ -96,7 +96,7 @@ model Category {
   id                 Int        @id @default(autoincrement())
   name               String     @unique
   parent_category_id Int?
-  parentCategory     Category?  @relation("CategoryParent", fields: [parent_category_id], references: [id])
+  parentCategory     Category?  @relation("CategoryParent", fields: [parent_category_id], references: [id],onDelete:SetNull)
   children           Category[] @relation("CategoryParent")
   products           Product[]
 
