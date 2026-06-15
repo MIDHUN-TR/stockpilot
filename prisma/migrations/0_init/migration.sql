@@ -72,7 +72,7 @@ CREATE TABLE "stock_reservations" (
     "orderId" INTEGER,
     "quantity" INTEGER NOT NULL,
     "status" "StockReservationStatus" NOT NULL DEFAULT 'Active',
-    "cratedById" INTEGER NOT NULL,
+    "createdById" INTEGER NOT NULL,
     "expiresAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -147,10 +147,10 @@ CREATE TABLE "categories" (
 CREATE TABLE "stock_movements" (
     "id" SERIAL NOT NULL,
     "productId" INTEGER NOT NULL,
-    "movement_type" "StockMovementType" NOT NULL,
+    "movementType" "StockMovementType" NOT NULL,
     "quantity" INTEGER NOT NULL,
-    "RefrenceType" TEXT NOT NULL,
-    "RefrenceId" INTEGER NOT NULL,
+    "refrenceType" TEXT NOT NULL,
+    "refrenceId" INTEGER NOT NULL,
     "note" TEXT NOT NULL,
     "createdBy" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -255,7 +255,7 @@ CREATE INDEX "stock_reservations_warehouseId_idx" ON "stock_reservations"("wareh
 CREATE INDEX "stock_reservations_orderId_idx" ON "stock_reservations"("orderId");
 
 -- CreateIndex
-CREATE INDEX "stock_reservations_cratedById_idx" ON "stock_reservations"("cratedById");
+CREATE INDEX "stock_reservations_createdById_idx" ON "stock_reservations"("createdById");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "tags_name_key" ON "tags"("name");
@@ -321,7 +321,7 @@ ALTER TABLE "stock_reservations" ADD CONSTRAINT "stock_reservations_warehouseId_
 ALTER TABLE "stock_reservations" ADD CONSTRAINT "stock_reservations_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "stock_reservations" ADD CONSTRAINT "stock_reservations_cratedById_fkey" FOREIGN KEY ("cratedById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "stock_reservations" ADD CONSTRAINT "stock_reservations_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "tags" ADD CONSTRAINT "tags_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;

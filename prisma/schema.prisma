@@ -122,7 +122,7 @@ model StockReservation {
   orderId     Int?
   quantity    Int
   status      StockReservationStatus @default(Active)
-  cratedById  Int
+  createdById Int
   expiresAt   DateTime?
   createdAt   DateTime               @default(now())
   updatedAt   DateTime               @updatedAt
@@ -130,12 +130,12 @@ model StockReservation {
   product   Product   @relation(fields: [productId], references: [id])
   warehouse Warehouse @relation(fields: [warehouseId], references: [id])
   order     Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
-  creator   User      @relation("StockReservationCreator", fields: [cratedById], references: [id])
+  creator   User      @relation("StockReservationCreator", fields: [createdById], references: [id])
 
   @@index([productId])
   @@index([warehouseId])
   @@index([orderId])
-  @@index([cratedById])
+  @@index([createdById])
   @@map("stock_reservations")
 }
 
@@ -219,15 +219,15 @@ model Category {
 }
 
 model StockMovement {
-  id            Int               @id @default(autoincrement())
-  productId     Int               @map("productId")
-  movement_type StockMovementType
-  quantity      Int
-  RefrenceType  String            @map("RefrenceType")
-  RefrenceId    Int               @map("RefrenceId")
-  note          String
-  createdBy     Int
-  createdAt     DateTime          @default(now())
+  id           Int               @id @default(autoincrement())
+  productId    Int               @map("productId")
+  movementType StockMovementType
+  quantity     Int
+  refrenceType String            @map("refrenceType")
+  refrenceId   Int               @map("refrenceId")
+  note         String
+  createdBy    Int
+  createdAt    DateTime          @default(now())
 
   product     Product    @relation(fields: [productId], references: [id])
   creator     User       @relation("StockMovementCreator", fields: [createdBy], references: [id])
