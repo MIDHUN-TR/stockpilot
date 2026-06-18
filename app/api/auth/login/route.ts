@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db/db";
 import becrypt from "bcrypt"
 
-
+type Data = {
+        email:string,
+        password:string
+}
 
 export async function POST(request: Request) {
         try {
-                const body = await request.json()
+                const body = await request.json() as Data
                 const { email,password } = body
 
                 const checkUser = await prisma.user.findUnique({
@@ -15,7 +18,7 @@ export async function POST(request: Request) {
                 if (!checkUser) {
                         return NextResponse.json({ message: "User not found" }, { status: 404 })
                 }
-                const compare  = await becrypt.compare(password ,checkUser.password_hash)
+                const compare  = await becrypt.compare(password ,checkUser.passwordHash)
                 if(!compare){
                         return NextResponse.json({error:"Wrong password"},{status:404})
                 }
