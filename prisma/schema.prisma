@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
   output   = "./generated"
@@ -10,6 +5,245 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id                    Int                @id @default(autoincrement())
+  name                  String
+  email                 String             @unique
+  passwordHash          String
+  phone                 String?
+  role                  Role               @default(Staff)
+  status                UserStatus         @default(Active)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  lastLoginAt           DateTime?
+  auditLogs             AuditLog[]         @relation("AuditLogActor")
+  keywordsCreated       Keyword[]
+  orders                Order[]
+  stockMovementsCreated StockMovement[]    @relation("StockMovementCreator")
+  stockReservations     StockReservation[] @relation("StockReservationCreator")
+  tagsCreated           Tag[]
+
+  @@map("users")
+}
+
+model Warehouse {
+  id             Int                @id @default(autoincrement())
+  code           String             @unique
+  name           String
+  location       String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  inventories    Inventory[]
+  stockMovements StockMovement[]
+  reservations   StockReservation[]
+
+  @@map("warehouses")
+}
+
+model Inventory {
+  id               Int       @id @default(autoincrement())
+  warehouseId      Int
+  productId        Int
+  quantityOnHand   Int       @default(0)
+  reservedQuantity Int       @default(0)
+  reorderLevel     Int       @default(10)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  product          Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouse        Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@unique([warehouseId, productId])
+  @@index([productId])
+  @@index([warehouseId])
+  @@map("inventory")
+}
+
+model StockReservation {
+  id          Int                    @id @default(autoincrement())
+  productId   Int
+  warehouseId Int
+  orderId     Int?
+  quantity    Int
+  status      StockReservationStatus @default(Active)
+  createdById Int
+  expiresAt   DateTime?
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  creator     User                   @relation("StockReservationCreator", fields: [createdById], references: [id])
+  order       Order?                 @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  product     Product                @relation(fields: [productId], references: [id])
+  warehouse   Warehouse              @relation(fields: [warehouseId], references: [id])
+
+  @@index([productId])
+  @@index([warehouseId])
+  @@index([orderId])
+  @@index([createdById])
+  @@map("stock_reservations")
+}
+
+model Tag {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  createdById Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  products    Product[] @relation("ProductToTag")
+
+  @@map("tags")
+}
+
+model Keyword {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  createdById Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  products    Product[]
+
+  @@map("keywords")
+}
+
+model Product {
+  id                Int                @id @default(autoincrement())
+  sku               String             @unique
+  name              String
+  description       String?            @db.Text
+  categoryId        Int
+  price             Decimal            @db.Decimal(10, 2)
+  costPrice         Decimal            @db.Decimal(10, 2)
+  status            ProductStatus      @default(Draft)
+  isActive          Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  inventory         Inventory[]
+  orderItems        OrderItem[]
+  images            ProductImage[]
+  category          Category           @relation(fields: [categoryId], references: [id])
+  stockMovements    StockMovement[]
+  stockReservations StockReservation[]
+  keywords          Keyword[]
+  tags              Tag[]              @relation("ProductToTag")
+
+  @@index([categoryId])
+  @@map("products")
+}
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  url       String
+  altText   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+model Category {
+  id               Int        @id @default(autoincrement())
+  name             String     @unique
+  parentCategoryId Int?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  parentCategory   Category?  @relation("CategoryParent", fields: [parentCategoryId], references: [id], onDelete: SetNull)
+  children         Category[] @relation("CategoryParent")
+  products         Product[]
+
+  @@index([parentCategoryId])
+  @@map("categories")
+}
+
+model StockMovement {
+  id            Int               @id @default(autoincrement())
+  productId     Int               @map("productId")
+  movementType  StockMovementType
+  quantity      Int
+  referenceType String            @map("referenceType")
+  referenceId   Int               @map("referenceId")
+  note          String?
+  createdById   Int
+  createdAt     DateTime          @default(now())
+  warehouseId   Int
+  creator       User              @relation("StockMovementCreator", fields: [createdById], references: [id])
+  product       Product           @relation(fields: [productId], references: [id])
+  warehouse     Warehouse         @relation(fields: [warehouseId], references: [id])
+
+  @@index([productId])
+  @@index([warehouseId])
+  @@index([createdById])
+  @@map("stock_movements")
+}
+
+model Order {
+  id            Int                @id @default(autoincrement())
+  orderNumber   String             @unique
+  userId        Int?
+  customerName  String
+  totalAmount   Decimal            @db.Decimal(10, 2)
+  paymentStatus PaymentStatus      @default(Pending)
+  orderStatus   OrderStatus        @default(Pending)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  items         OrderItem[]
+  user          User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  payments      Payment[]
+  reservations  StockReservation[]
+
+  @@index([userId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  subtotal  Decimal @db.Decimal(10, 2)
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model Payment {
+  id                Int           @id @default(autoincrement())
+  orderId           Int
+  provider          String
+  providerPaymentId String        @unique
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @db.VarChar(3)
+  status            PaymentStatus @default(Pending)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("payments")
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  actorId    Int
+  action     String
+  entityType String
+  entityId   Int
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  actor      User     @relation("AuditLogActor", fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
 }
 
 enum Role {
@@ -57,251 +291,4 @@ enum UserStatus {
   Active
   Inactive
   Suspended
-}
-
-model User {
-  id           Int        @id @default(autoincrement())
-  name         String
-  email        String     @unique
-  passwordHash String
-  phone        String
-  role         Role       @default(Staff)
-  status       UserStatus @default(Active)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  lastLoginAt  DateTime?
-
-  orders                  Order[]
-  auditLogs               AuditLog[]         @relation("AuditLogActor")
-  stockMovementsCreated   StockMovement[]    @relation("StockMovementCreator")
-  stockReservationCreated StockReservation[] @relation("StockReservationCreator")
-  tags                    Tag[]
-  keywords                Keyword[]
-
-  @@map("users")
-}
-
-model Warehouse {
-  id        Int      @id @default(autoincrement())
-  code      String   @unique
-  name      String
-  location  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  inventories    Inventory[]
-  stockMovements StockMovement[]
-  reservations   StockReservation[]
-
-  @@map("warehouses")
-}
-
-model Inventory {
-  id               Int      @id @default(autoincrement())
-  warehouseId      Int
-  productId        Int
-  quantityOnHand   Int      @default(0)
-  reservedQuantity Int      @default(0)
-  reorderLevel     Int      @default(10)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
-  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@unique([warehouseId, productId])
-  @@index([productId])
-  @@index([warehouseId])
-  @@map("inventory")
-}
-
-model StockReservation {
-  id          Int                    @id @default(autoincrement())
-  productId   Int
-  warehouseId Int
-  orderId     Int?
-  quantity    Int
-  status      StockReservationStatus @default(Active)
-  createdById Int
-  expiresAt   DateTime?
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
-
-  product   Product   @relation(fields: [productId], references: [id])
-  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
-  order     Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
-  creator   User      @relation("StockReservationCreator", fields: [createdById], references: [id])
-
-  @@index([productId])
-  @@index([warehouseId])
-  @@index([orderId])
-  @@index([createdById])
-  @@map("stock_reservations")
-}
-
-model Tag {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  createdById Int?
-  createdBy   User?    @relation(fields: [createdById], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  products Product[]
-
-  @@map("tags")
-}
-
-model Keyword {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
-  createdById Int?
-  createdBy   User?     @relation(fields: [createdById], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  products    Product[]
-
-  @@map("keywords")
-}
-
-model Product {
-  id          Int           @id @default(autoincrement())
-  sku         String        @unique
-  name        String
-  description String        @db.Text
-  categoryId  Int
-  price       Decimal       @db.Decimal(10, 2)
-  costPrice   Decimal       @db.Decimal(10, 2)
-  status      ProductStatus @default(Draft)
-  isActive    Boolean       @default(false)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  category          Category           @relation(fields: [categoryId], references: [id])
-  images            ProductImages[]
-  inventory         Inventory[]
-  stockMovements    StockMovement[]
-  stockreservations StockReservation[]
-  orderItems        OrderItem[]
-  tags              Tag[]
-  keywords          Keyword[]
-
-  @@map("products")
-}
-
-model ProductImages {
-  id        Int      @id @default(autoincrement())
-  productId Int
-  url       String
-  altText   String?
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@index([productId])
-  @@map("product_images")
-}
-
-model Category {
-  id               Int        @id @default(autoincrement())
-  name             String     @unique
-  parentCategoryId Int?
-  parentCategory   Category?  @relation("CategoryParent", fields: [parentCategoryId], references: [id], onDelete: SetNull)
-  children         Category[] @relation("CategoryParent")
-  products         Product[]
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
-
-  @@index([parentCategoryId])
-  @@map("categories")
-}
-
-model StockMovement {
-  id           Int               @id @default(autoincrement())
-  productId    Int               @map("productId")
-  movementType StockMovementType
-  quantity     Int
-  refrenceType String            @map("refrenceType")
-  refrenceId   Int               @map("refrenceId")
-  note         String
-  createdBy    Int
-  createdAt    DateTime          @default(now())
-
-  product     Product    @relation(fields: [productId], references: [id])
-  creator     User       @relation("StockMovementCreator", fields: [createdBy], references: [id])
-  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
-  warehouseId Int?
-
-  @@map("stock_movements")
-}
-
-model Order {
-  id            Int           @id @default(autoincrement())
-  orderNumber   String        @unique
-  userId        Int?
-  customerName  String
-  totalAmount   Decimal       @db.Decimal(10, 2)
-  paymentStatus PaymentStatus @default(Pending)
-  orderStatus   OrderStatus   @default(Pending)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  user         User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
-  items        OrderItem[]
-  payments     Payment[]
-  reservations StockReservation[]
-
-  @@index([userId])
-  @@map("orders")
-}
-
-model OrderItem {
-  id        Int     @id @default(autoincrement())
-  orderId   Int
-  productId Int
-  quantity  Int
-  unitPrice Decimal @db.Decimal(10, 2)
-  subtotal  Decimal @db.Decimal(10, 2)
-
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
-
-  @@index([orderId])
-  @@index([productId])
-  @@map("order_items")
-}
-
-model Payment {
-  id                Int           @id @default(autoincrement())
-  orderId           Int
-  provider          String
-  providerPaymentId String        @unique
-  amount            Decimal       @db.Decimal(10, 2)
-  currency          String        @db.VarChar(3)
-  status            PaymentStatus @default(Pending)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  @@index([orderId])
-  @@map("payments")
-}
-
-model AuditLog {
-  id         Int      @id @default(autoincrement())
-  actorId    Int
-  action     String
-  entityType String
-  entityId   Int
-  metadata   Json?
-  createdAt  DateTime @default(now())
-
-  actor User @relation("AuditLogActor", fields: [actorId], references: [id])
-
-  @@index([actorId])
-  @@index([entityType, entityId])
-  @@map("audit_logs")
 }
