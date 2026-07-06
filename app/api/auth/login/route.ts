@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db/db";
 import becrypt from "bcrypt"
-
+import { generateToken } from "@/lib/auth/jwt";
 type Data = {
         email:string,
         password:string
@@ -22,8 +22,13 @@ export async function POST(request: Request) {
                 if(!compare){
                         return NextResponse.json({error:"Wrong password"},{status:404})
                 }
-
-                return NextResponse.json({ message: "User  found",data:checkUser }, { status: 200 })
+                
+                const token = generateToken({
+                        userId:checkUser.id,
+                        email:checkUser.email,
+                        role:checkUser.role as unknown as string
+                })
+                return NextResponse.json({ message: "User found",data:checkUser,token }, { status: 200 })
         }
         catch (e) {
                 return NextResponse.json({ message: e }, { status: 500 })
