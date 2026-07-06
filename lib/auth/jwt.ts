@@ -21,7 +21,7 @@ export type UserRole = 'admin' | 'staff' | 'user' | 'superadmin' | 'manager' | '
 
 // Defining the exact shape of Token Payload
 export interface UserTokenPayload extends JwtPayload {
-    userId: string;
+    userId: number;
     email: string;
     role: UserRole;
 }
