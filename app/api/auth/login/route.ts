@@ -28,6 +28,11 @@ export async function POST(request: Request) {
                         email:checkUser.email,
                         role:checkUser.role as unknown as string
                 })
+
+                await prisma.user.update({
+                        where:{id:checkUser.id},
+                        data:{lastLoginAt:new Date()}
+                })
                 return NextResponse.json({ message: "User found",data:checkUser,token }, { status: 200 })
         }
         catch (e) {
