@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 
 
-export async function GET(request: Request) {
+export async function GET() {
     try{
         const products = await prisma.product.findMany();
         return NextResponse.json({message: "Products fetched successfully", products}, { status: 200 });
