@@ -14,14 +14,15 @@ interface ProductPayload {
 }
 // PATCH method to edit the product
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const body = (await request.json()) as ProductPayload
         // Prevent a database call if the user sent an empty object
         if (Object.keys(body).length === 0) {
             return NextResponse.json({ message: "No data provided to update" }, { status: 400 })
         }
-        const ID = Number(params.id)
+        const resolvedParams = await params;
+        const ID = Number(resolvedParams.id)
         // Optional check if the ID is actually a number
         if (isNaN(ID)) {
             return NextResponse.json({ message: "Invalid product ID" }, { status: 400 })
@@ -48,7 +49,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
     catch (e) {
         const errormessage = e instanceof Error ? e.message : "Unknown error"
-        return NextResponse.json({ message: "Edit function error:", error: errormessage }, { status: 500 })
+        console.error("Product update backend error: ",errormessage)
+        return NextResponse.json({ message: "Something went wrong in PATCH function" }, { status: 500 })
     }
 }
 
