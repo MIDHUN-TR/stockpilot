@@ -77,3 +77,32 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         return NextResponse.json({ message: "Delete function error:", error: errormessage }, { status: 500 })
     }
 }
+
+
+// create a GET method to get a product by id
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+    try {   
+        const resolvedParams = await params;
+        const ID =  Number( resolvedParams.id)
+        if (isNaN(ID)) {
+            return NextResponse.json({ message: "Invalid product ID" }, { status: 400 })
+        }
+
+        const product = await prisma.product.findUnique({
+            where: {
+                id: ID
+            }
+        })
+
+        if (!product) {
+            return NextResponse.json({ message: "The product doesn't exist" }, { status: 404 })
+        }
+
+        return NextResponse.json(product, { status: 200 })
+    }
+    catch (e) {
+        const errormessage = e instanceof Error ? e.message : "Unknown error"
+        console.error("Database error:",errormessage)
+        return NextResponse.json({ message: "Something went wrong in GET function" }, { status: 500 })
+    }
+}
