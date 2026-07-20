@@ -1,6 +1,5 @@
 import prisma from "@/lib/db/db";
 import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 
 interface WarehousePayload {
     code: string;
@@ -37,4 +36,15 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: "Something went wrong in warehouse creation" }, { status: 500 })
     }
 
+}
+
+export async function GET() {
+    try {
+        const warehouses = await prisma.warehouse.findMany();
+        return NextResponse.json(warehouses, { status: 200 });
+    } catch (e) {
+        const errormessage = e instanceof Error ? e.message : "Unknown error"
+        console.error("Warehouse retrieval backend error: ", errormessage)
+        return NextResponse.json({ message: "Something went wrong in warehouse retrieval" }, { status: 500 })
+    }   
 }
