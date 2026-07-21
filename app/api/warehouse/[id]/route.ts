@@ -64,3 +64,31 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
         return NextResponse.json({ message: "Something went wrong in warehouse delete" }, { status: 500 });
     }
 }
+
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        // awaiting the params to get the id of the warehouse to be fetched
+        const reservedParams = await params;    
+        // convert into number
+        const id = parseInt(reservedParams.id, 10);
+        // check if the id is a number, if not return a 400 error
+        if(isNaN(id)){
+            return NextResponse.json({ message: "Invalid warehouse ID" }, { status: 400 });
+        }
+        // fetch the warehouse from the database using prisma
+        const warehouse = await prisma.warehouse.findUnique({
+            where: { id },
+        });
+        // checking warehouse with the given id exists or not, if not return a 404 error
+        if (!warehouse) {
+            return NextResponse.json({ message: "Warehouse with this ID doesn't exist" }, { status: 404 });
+        }
+        // return fetched warehouse data as json with a 200 status code
+        return NextResponse.json(warehouse, { status: 200 });
+    } catch (e: unknown) {
+        // log the error message to the console for debugging purposes
+        const errormessage = e instanceof Error ? e.message : "Unknown error";
+        console.error("Warehouse get backend error: ", errormessage);
+        return NextResponse.json({ message: "Something went wrong in warehouse get" }, { status: 500 });
+    }
+}
