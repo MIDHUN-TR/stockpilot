@@ -41,3 +41,26 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         return NextResponse.json({ message: "Something went wrong in warehouse update" }, { status: 500 });
     }
 }
+
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const reservedParams = await params;
+        const id = parseInt(reservedParams.id, 10);
+        if(isNaN(id)){
+            return NextResponse.json({ message: "Invalid warehouse ID" }, { status: 400 });
+        }
+        await prisma.warehouse.delete({
+            where: { id },
+        }); 
+        return NextResponse.json({message: "Warehouse deleted successfully"}, { status: 200 });
+    } catch (e: unknown) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError) {
+            if (e.code === 'P2025') {
+                return NextResponse.json({ message: "Warehouse with this ID doesn't exist" }, { status: 404 });
+            }
+        }
+        const errormessage = e instanceof Error ? e.message : "Unknown error";
+        console.error("Warehouse delete backend error: ", errormessage);
+        return NextResponse.json({ message: "Something went wrong in warehouse delete" }, { status: 500 });
+    }
+}
