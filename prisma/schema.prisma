@@ -165,7 +165,7 @@ model StockMovement {
   productId     Int               @map("productId")
   movementType  StockMovementType
   quantity      Int
-  referenceType String            @map("referenceType")
+  referenceType referenceType
   referenceId   Int               @map("referenceId")
   note          String?
   createdById   Int
@@ -291,4 +291,14 @@ enum UserStatus {
   Active
   Inactive
   Suspended
+}
+
+enum referenceType {
+  RETAIL_BILL
+  ECOMMERCE_ORDER
+  PURCHASE_ORDER
+  OPENING_STOCK
+  MANUAL_ADJUSTMENT
+  INTERNAL_TRANSFER
+  WHOLESALE_BILL
 }
