@@ -166,7 +166,7 @@ model StockMovement {
   movementType  StockMovementType
   quantity      Int
   referenceType referenceType
-  referenceId   Int               @map("referenceId")
+  referenceId   Int?              @map("referenceId")
   note          String?
   createdById   Int
   createdAt     DateTime          @default(now())
