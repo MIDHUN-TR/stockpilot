@@ -139,3 +139,105 @@ export async function POST(request: Request) {
         );
     }
 }
+
+
+
+export async function GET(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        
+        //  Pagination validation (prevents NaN and negative numbers)
+        const pageParam = searchParams.get("page") || "1";
+        const limitParam = searchParams.get("limit") || "20";
+        const page = parseInt(pageParam);
+        const limit = parseInt(limitParam);
+
+        if (isNaN(page) || page < 1 || isNaN(limit) || limit < 1) {
+            return NextResponse.json(
+                { error: "Invalid pagination parameters. 'page' and 'limit' must be positive numbers." }, 
+                { status: 400 }
+            );
+        }
+
+        // Build the dynamic where clause
+        const whereClause: Prisma.StockMovementWhereInput = {};
+
+        // Product ID Validation
+        const productId = searchParams.get("productId");
+        if (productId) {
+            const parsedProductId = parseInt(productId);
+            if (isNaN(parsedProductId)) {
+                return NextResponse.json({ error: "Invalid productId format. Must be a number." }, { status: 400 });
+            }
+            whereClause.productId = parsedProductId;
+        }
+
+        // Validate warehouse ID
+        const warehouseId = searchParams.get("warehouseId");
+        if (warehouseId) {
+            const parsedWarehouseId = parseInt(warehouseId);
+            if (isNaN(parsedWarehouseId)) {
+                return NextResponse.json({ error: "Invalid warehouseId format. Must be a number." }, { status: 400 });
+            }
+            whereClause.warehouseId = parsedWarehouseId;
+        }
+
+        // 3. Enum validation (prevents invalid values)
+        const movementType = searchParams.get("movementType");
+        if (movementType) {
+            const validMovementTypes = ["IN", "OUT", "ADJUSTMENT"];
+            if (!validMovementTypes.includes(movementType)) {
+                return NextResponse.json(
+                    { error: `Invalid movementType. Allowed values are: ${validMovementTypes.join(", ")}` }, 
+                    { status: 400 }
+                );
+            }
+
+            whereClause.movementType = movementType as Prisma.EnumStockMovementTypeFilter;
+        }
+
+        const skip = (page - 1) * limit;
+
+        const [stockMovements, totalCount] = await Promise.all([
+            prisma.stockMovement.findMany({
+                where: whereClause,
+                skip: skip,
+                take: limit,
+                orderBy: {
+                    createdAt: 'desc' 
+                },
+                include: {
+                    product: { select: { name: true, sku: true } }, 
+                    warehouse: { select: { name: true } },
+                    creator: { select: { name: true, email: true } } 
+                }
+            }),
+            prisma.stockMovement.count({ where: whereClause })
+        ]);
+
+        return NextResponse.json({
+            data: stockMovements,
+            meta: {
+                totalCount,
+                currentPage: page,
+                totalPages: Math.ceil(totalCount / limit)
+            }
+        }, { status: 200 });
+
+    } catch (error: unknown) {
+        console.error("Error fetching stock movements:", error);
+        
+        // Catch Prisma-related errors
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            return NextResponse.json(
+                { error: "A database error occurred while fetching data." }, 
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json(
+            { error: "An unexpected error occurred while fetching stock movements." }, 
+            { status: 500 }
+        );
+    }
+}
