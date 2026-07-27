@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
             // 2. Calculate quantity by checking if it is E-Commerce or direct sale
             // calculating the product when checking E-Commerce or Sale 
-            let inventoryUpdateData: any = {};
+            let inventoryUpdateData: Prisma.InventoryUpdateInput = {};
 
             if (body.referenceType === "ECOMMERCE_ORDER" && body.movementType === "OUT") {
                 // E-Commerce: Reserving the product
