@@ -33,7 +33,8 @@ export async function POST(request: Request) {
                         where:{id:checkUser.id},
                         data:{lastLoginAt:new Date()}
                 })
-                return NextResponse.json({ message: "User found",data:checkUser,token }, { status: 200 })
+                console.log(checkUser)
+                return NextResponse.json({ message: "User found",token }, { status: 200 })
         }
         catch (e) {
                 return NextResponse.json({ message: e }, { status: 500 })
