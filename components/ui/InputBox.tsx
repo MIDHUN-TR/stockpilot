@@ -1,8 +1,8 @@
 "use client";
-import React, { useState, InputHTMLAttributes } from "react";
-import styles from "./AuthInput.module.css";
+import * as React from "react";
+import styles from "./InputBox.module.css";
 
-export interface AuthInputProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface AuthInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   icon?: React.ReactNode;
   error?: string;
@@ -20,7 +20,7 @@ export default function AuthInput({
   onBlur,
   ...props
 }: AuthInputProps) {
-  const [isFocused, setIsFocused] = useState(false);
+  const [isFocused, setIsFocused] = React.useState(false);
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(true);
