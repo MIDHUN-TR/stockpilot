@@ -41,7 +41,7 @@ export interface inventoryData {
 interface ApiResponse{
   message:string;
   data:inventoryData[];
-  totalCoun:number;
+  totalCount:number;
 }
 
 export default function InventoryTable() {
@@ -69,7 +69,7 @@ export default function InventoryTable() {
         // Access the actual array inside the 'data' property
         if (result && Array.isArray(result.data)) {
           setInventory(result.data);
-          setTotalCount(result.totalCoun || 0); //Save the total count from API
+          setTotalCount(result.totalCount || 0); //Save the total count from API
         } else {
           throw new Error("API did not return an array in the 'data' field.");
         }
