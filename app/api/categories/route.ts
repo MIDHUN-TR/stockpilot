@@ -1,41 +1,51 @@
 import prisma from "@/lib/db/db";
 import { NextResponse } from "next/server";
-type category ={
-    name:string
-    parent_category_id:number
+import {Prisma} from "@prisma/client";
+type category = {
+    name: string
+    parentCategoryId?: number | string;
 }
-export async function POST(request:Request){
-    try{
-        // parsing the credentials
-        const body = await request.json() as category
-        // destructuring the body
-        const {name,parent_category_id} = body
-        
-        // checking the provide parent is exist or not
-        if(parent_category_id){
-            const parentExits = await prisma.category.findUnique({
-                where:{id:Number(parent_category_id)}
+export async function POST(request: Request) {
+    try {
+        const body = (await request.json()) as category
+        const name = body.name?.trim()
+        const parentCategoryId = body.parentCategoryId ? Number(body.parentCategoryId) : undefined
+
+        if (!name) {
+            return NextResponse.json({ message: "Category name is required" }, { status: 400 })
+        }
+
+        const existingCategory = await prisma.category.findUnique({
+            where: { name }
+        })
+        if (existingCategory) {
+            return NextResponse.json({ message: "Category already exists" }, { status: 409 })
+        }
+
+        if (parentCategoryId) {
+            const parentExists = await prisma.category.findUnique({
+                where: { id: parentCategoryId }
             })
-            if(!parentExits){
-                return NextResponse.json({message:"Parentcategory not exits"},{status:400})
+            if (!parentExists) {
+                return NextResponse.json({ message: "Parent category does not exist" }, { status: 400 })
             }
         }
 
-        // New category is creating 
         const newCategory = await prisma.category.create({
-            data:{
-                name:name,
-                parent_category_id:parent_category_id?Number(parent_category_id) : null
+            data: {
+                name,
+                parentCategoryId: parentCategoryId ?? null
             }
         })
 
-        // returning the response
-        return NextResponse.json({message:"New category is created:",newCategory},{status:201})
+        return NextResponse.json({ message: "New category created", newCategory }, { status: 201 })
     }
-    catch(e:unknown){
-        console.error("Error",e)
-        return NextResponse.json({message:"something went wrong in categories api",error:e},{status:500})
-        
+    catch (e: unknown) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+            return NextResponse.json({ message: "Category already exists" }, { status: 409 })
+        }
+        console.error("Error", e)
+        return NextResponse.json({ message: "Something went wrong in categories api", error: e }, { status: 500 })
     }
 }
 

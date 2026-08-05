@@ -1,7 +1,8 @@
 "use client"
-import AuthButton from "../ui/AuthButton";
-import AuthInput from "../ui/AuthInput";
-import PasswordValidator from "../ui/AuthPassword";
+import AuthButton from "../ui/ActionButton";
+// Renamed file name convnient to PasswordValidator for better understanding of the component
+import AuthInput from "../ui/InputBox";
+import PasswordValidator from "../ui/PasswordBox";
 
 
 export default function RegisterForm() {

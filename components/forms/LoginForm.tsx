@@ -1,9 +1,9 @@
 "use client"
 
 import React from "react";
-import AuthButton from "../ui/AuthButton";
-import AuthInput from "../ui/AuthInput";
-import PasswordValidator from "../ui/AuthPassword";
+import AuthButton from "../ui/ActionButton";
+import AuthInput from "../ui/InputBox";
+import PasswordValidator from "../ui/PasswordBox";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 

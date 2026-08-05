@@ -7,7 +7,7 @@ type Data = {
     email: string,
     password: string,
     confirmpassword: string
-
+    phoneNumber:string
 }
 
 
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     try {
         const body = await request.json() as Data
 
-        const { name, email, password, confirmpassword } = body
+        const { name, email, password, confirmpassword,phoneNumber } = body
         const checkUser = await prisma.user.findUnique({
             where:{email}
         })
@@ -31,7 +31,8 @@ export async function POST(request: Request) {
             data: {
                 name: name,
                 email: email,
-                password_hash: hashed_password
+                passwordHash: hashed_password,
+                phone:phoneNumber
             },
 
         })
