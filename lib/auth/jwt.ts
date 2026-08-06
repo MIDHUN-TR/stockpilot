@@ -37,3 +37,15 @@ export const generateToken = (
 
     })
 }
+
+// Jwt token verification code 
+
+export const verifyToken = (token:string):UserTokenPayload =>{
+    try{
+        return jwt.verify(token,JWT_SECRET_KEY) as UserTokenPayload
+    }
+    catch(e){
+        console.error('Error verifying token:',e);
+        throw new Error('Invalid Token')    
+    }
+}
