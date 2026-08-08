@@ -4,9 +4,6 @@ import jwt, { JwtPayload, SignOptions } from 'jsonwebtoken';
 import { jwtVerify } from 'jose';
 
 //defining the environment variable structure safety
-
-
-
 const secretKey = process.env.JWT_SECRET_KEY
 
 // ensuring that the secret key is defined
@@ -26,7 +23,6 @@ export interface UserTokenPayload extends JwtPayload {
     email: string;
     role: UserRole;
 }
-
 
 export const generateToken = (
     payload: Omit<UserTokenPayload, 'iat' | 'exp'>,
