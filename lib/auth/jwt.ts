@@ -1,6 +1,7 @@
 // creating production ready helper function for generating JWT token 
 
 import jwt, { JwtPayload, SignOptions } from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 
 //defining the environment variable structure safety
 
@@ -39,13 +40,28 @@ export const generateToken = (
 }
 
 // Jwt token verification code 
+// Define your payload type
+export interface UserTokenPayload {
+    id: string;
+    role: UserRole;
+    [key: string]: unknown;
+}
 
-export const verifyToken = (token:string):UserTokenPayload =>{
-    try{
-        return jwt.verify(token,JWT_SECRET_KEY) as UserTokenPayload
-    }
-    catch(e){
-        console.error('Error verifying token:',e);
-        throw new Error('Invalid Token')    
+export const verifyToken = async (token: string): Promise<UserTokenPayload> => {
+    try {
+        // 1. Get your secret
+        const secret = process.env.JWT_SECRET_KEY;
+        if (!secret) throw new Error("JWT_SECRET_KEY is missing");
+
+        // 2. Encode the secret for jose
+        const encodedSecret = new TextEncoder().encode(secret);
+
+        // 3. Verify the token
+        const { payload } = await jwtVerify(token, encodedSecret);
+        
+        return payload as unknown as UserTokenPayload;
+    } catch (e) {
+        console.error('Error verifying token:', e);
+        throw new Error('Invalid Token');
     }
 }
