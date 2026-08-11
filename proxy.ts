@@ -8,22 +8,23 @@ import { verifyToken } from "./lib/auth/jwt"
 // Define RBAC Logic: Map specific routes to allowed roles.
 const rbacRules = [
     // Admins only
-    { path: '/settings', allowedRoles: ['admin'] },
-    { path: '/api/warehouse', allowedRoles: ['admin'] },
+    { path: '/settings', allowedRoles: ['Admin'] },
+    { path: '/api/warehouse', allowedRoles: ['Admin'] },
     
     // Managers and Admins
-    { path: '/inventory', allowedRoles: ['admin', 'manager'] },
-    { path: '/api/inventory', allowedRoles: ['admin', 'manager'] },
+    { path: '/inventory', allowedRoles: ['Admin', 'Manager'] },
+    { path: '/api/inventory', allowedRoles: ['Admin', 'Manager'] },
     
-    // Everyone (assuming basic users have 'user' role)
-    { path: '/dashboard', allowedRoles: ['admin', 'manager', 'user'] },
-    { path: '/orders', allowedRoles: ['admin', 'manager', 'user'] },
-    { path: '/products', allowedRoles: ['admin', 'manager', 'user'] },
-    { path: '/analytics', allowedRoles: ['admin', 'manager', 'user'] },
+    // Everyone (assuming basic users have 'Staff' role)
+    { path: '/dashboard', allowedRoles: ['Admin', 'Manager', 'Staff'] },
+    { path: '/orders', allowedRoles: ['Admin', 'Manager', 'Staff'] },
+    { path: '/products', allowedRoles: ['Admin', 'Manager', 'Staff'] },
+    { path: '/analytics', allowedRoles: ['Admin', 'Manager', 'Staff'] },
+    
     // API routes
-    { path: '/api/categories', allowedRoles: ['admin', 'manager', 'user'] },
-    { path: '/api/products', allowedRoles: ['admin', 'manager', 'user'] },
-    { path: '/api/stock-movements', allowedRoles: ['admin', 'manager', 'user'] },
+    { path: '/api/categories', allowedRoles: ['Admin', 'Manager', 'Staff'] },
+    { path: '/api/products', allowedRoles: ['Admin', 'Manager', 'Staff'] },
+    { path: '/api/stock-movements', allowedRoles: ['Admin', 'Manager', 'Staff'] },
 ]
 
 export default async function middleware(request: NextRequest) {
