@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { DataTable, Column } from "../ui/DataTable";
+import { useSearchParams } from "next/navigation";
 
 export interface product {
   id: number;
@@ -45,6 +46,7 @@ interface ApiResponse{
 }
 
 export default function InventoryTable() {
+
   const [inventory, setInventory] = useState<inventoryData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,18 +56,33 @@ export default function InventoryTable() {
   const[totalCount,setTotalCount] = useState<number>(0)
   const limit = 25 //for matching API default
 
+    const searchParams = useSearchParams();
+    const searchQuery = searchParams.get("search") || "";
+
+    // Reset to page 1 whenever the search query changes
+    useEffect(() => {
+      setPage(1);
+    }, [searchQuery]);
+
   useEffect(() => {
     const fetchInventory = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        const response = await fetch(`http://localhost:3000/api/inventory?page=${page}&limit${limit}`);
+        // Build dynamic API URL based on parameters
+        let apiUrl = `/api/inventory?page=${page}&limit=${limit}`;
+        if (searchQuery) {
+          apiUrl += `&search=${encodeURIComponent(searchQuery)}`;
+        }
+        // We use relative path instead of localhost:3000 to work correctly on production
+        const response = await fetch(apiUrl);
 
         if (!response.ok) {
           throw new Error(`Server responded with status: ${response.status}`);
         }
         const result: ApiResponse = await response.json();
+
         // Access the actual array inside the 'data' property
         if (result && Array.isArray(result.data)) {
           setInventory(result.data);
@@ -82,7 +99,7 @@ export default function InventoryTable() {
       }
     };
     fetchInventory();
-  }, [page]);
+  }, [page,searchQuery]);// Added search to dependency array so it refetches when search changes
 
   
   // Define columns using both basic accessors and custom render functions for nested data
