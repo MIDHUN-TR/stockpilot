@@ -13,6 +13,9 @@ interface StatCardProps {
   icon?: React.ReactNode;
   trend?: TrendProps;
   isLoading?: boolean;
+  onClick?: () => void;
+  isActive?: boolean;
+  isClickable?: boolean;
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -21,6 +24,9 @@ export const StatCard: React.FC<StatCardProps> = ({
   icon,
   trend,
   isLoading = false,
+  onClick,
+  isActive = false,
+  isClickable = false
 }) => {
   // 1. Handle Skeleton Loading State
   if (isLoading) {
@@ -56,7 +62,14 @@ export const StatCard: React.FC<StatCardProps> = ({
   const TrendIcon = trend ? trendConfig[trend.type].icon : null;
 
   return (
-    <div className="p-6 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between">
+    <div onClick={onClick}
+    className={`
+        p-6 rounded-xl shadow-sm transition-all duration-200 flex flex-col justify-between border
+        ${isClickable ? 'cursor-pointer hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700' : ''}
+        ${isActive 
+          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-400 dark:border-blue-600 ring-1 ring-blue-400' 
+          : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'}
+      `}>
       {/* Top Row: Title and Icon */}
       <div className="flex items-center justify-between gap-4 mb-2">
         {/* Brightened title in dark mode to gray-300 */}
