@@ -59,10 +59,13 @@ export default function InventoryTable() {
     const searchParams = useSearchParams();
     const searchQuery = searchParams.get("search") || "";
 
+    // Get the status filter form URL 
+    const statusFilter = searchParams.get("status") || "";
+
     // Reset to page 1 whenever the search query changes
     useEffect(() => {
       setPage(1);
-    }, [searchQuery]);
+    }, [searchQuery,statusFilter]);
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -74,6 +77,9 @@ export default function InventoryTable() {
         let apiUrl = `/api/inventory?page=${page}&limit=${limit}`;
         if (searchQuery) {
           apiUrl += `&search=${encodeURIComponent(searchQuery)}`;
+        }
+        if(statusFilter){
+          apiUrl+=`&status=${statusFilter}`
         }
         // We use relative path instead of localhost:3000 to work correctly on production
         const response = await fetch(apiUrl);
@@ -99,7 +105,7 @@ export default function InventoryTable() {
       }
     };
     fetchInventory();
-  }, [page,searchQuery]);// Added search to dependency array so it refetches when search changes
+  }, [page,searchQuery,statusFilter]);// Added search and statusfilter to dependency array so it refetches when search changes
 
   
   // Define columns using both basic accessors and custom render functions for nested data
