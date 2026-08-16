@@ -13,15 +13,15 @@ export async function GET(){
             prisma.inventory.count({
                 where: {
                     quantityOnHand: {
-                        gt: 10,
-                        lte:0
+                        lte: 10,
+                        gt:0
                     }
                 }
             }),
             prisma.inventory.count({
                 where: {
                     quantityOnHand: {
-                        lte: 0
+                        equals: 0
                     }
                 }
             })
