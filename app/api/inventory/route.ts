@@ -58,10 +58,7 @@ export async function GET(request: Request) {
 
         switch (status) {
             case "OUT_OF_STOCK":
-                whereClause.quantityOnHand = { lte: 0 }
-                break;
-            case "IN_STOCK":
-                whereClause.quantityOnHand = { gt: 0 }
+                whereClause.quantityOnHand = { equals: 0 }
                 break;
             case "LOW_STOCK":
                 whereClause.quantityOnHand = {
