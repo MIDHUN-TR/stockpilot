@@ -125,7 +125,7 @@ export default function InventoryTable() {
 
   if (isLoading && inventory.length === 0)
     return <div className="p-4 text-gray-500">Loading inventory...</div>;
-  if (error) return <div className="p-4 text-red-500">Error: {error}</div>;
+  if (error) return <div className="p-4 text-red-500">Error: {error.message}</div>;
   // Calculate total pages based on count and limit
   const totalPages = Math.ceil(totalCount / limit);
   return (
