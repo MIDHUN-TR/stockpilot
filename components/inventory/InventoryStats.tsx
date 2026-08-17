@@ -1,10 +1,16 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React from "react";
 // importing nextjs hooks for URL manipulation
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { Package, AlertTriangle, XCircle, IndianRupeeIcon } from "lucide-react";
 import { StatCard } from "../ui/StatCard";
+import useSWR from "swr";
 
+const fetcher = (url: string) =>
+  fetch(url).then((res) => {
+    if (!res.ok) throw new Error(`Server responded with status code ${res.status}`);
+    return res.json();
+  });
 
 export default function InventoryStats() {
   const searchParams = useSearchParams();
@@ -13,57 +19,24 @@ export default function InventoryStats() {
 
   // Get the current Status filter from the URL search parameters
   const currentStatus = searchParams.get("status");
-  // state store api counts
-  const [stats, setStats] = useState({
-    totalProducts: 0,
-    lowStock: 0,
-    outOfStock: 0,
-    totalValue: 0,
+
+  // Using SWR instead of useEffect.
+  // It handles loading state, data fetching, and caching automatically.
+  const {data:response,error,isLoading}=useSWR('/api/inventory/stats',fetcher,{
+    revalidateOnFocus:false,//Prevents re-fetching when clicking away and back to the tab
+    dedupingInterval:60000, //Deduplicates requests withing 60 seconds 
   });
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Fetch real counts using your existing API endpoint when the component mounts
-  useEffect(() => {
-    const fetchCounts = async () => {
-      try {
-        setIsLoading(true);
-        // Run API calls in parallel using Promise.all to save time
-        // Simulate an API call - replace this with your actual API endpoint
-        const [totalRes, lowStockRes, outOfStockRes] = await Promise.all([
-          fetch("/api/inventory?limit=1"),
-          fetch("/api/inventory?status=LOW_STOCK&limit=1"),
-          fetch("/api/inventory?status=OUT_OF_STOCK&limit=1"),
-        ]);
-
-
-        const totalData = await totalRes.json();
-        const lowStockData = await lowStockRes.json();
-        const outOfStockData = await outOfStockRes.json();
-
-        // Update the state with the fetched data
-        setStats({
-          totalProducts: totalData.totalCount || 0,
-          lowStock: lowStockData.totalCount || 0,
-          outOfStock: outOfStockData.totalCount || 0,
-         // Note: Total value requires aggregating all inventory prices * quantity.
-          // Since the current API doesn't return this, we use a placeholder or calculate it in backend later.
-          totalValue: 845000
-        });
-       
-      } catch (error) {
-        console.error("Error fetching inventory counts:", error);
-      }
-      finally{
-        setIsLoading(false);
-      }
-    };
-
-    fetchCounts();
-  }, []); 
-   console.log(stats)
+  // Extract stats from response or provide default fallbacks 
+  const stats = response || {
+    totalProducts:0,
+    lowStock:0,
+    outOfStock:0,
+    totalValuation:0
+  };
+  // console.log(stats)
 
   // Function to handle card clicks and update URL
-  const handleCardClick = (statusFilter:string) =>{
+  const handleCardClick = (statusFilter: string) => {
     const params = new URLSearchParams(searchParams.toString());
     // Toggle logic : If the clicked card is already active , remove the filter
     if (currentStatus === statusFilter) {
@@ -74,21 +47,18 @@ export default function InventoryStats() {
 
     // Reset to page 1
     params.set("page", "1");
-    // Update the URL 
+    // Update the URL
     router.push(`${pathname}?${params.toString()}`);
-  }
-
+  };
+if(error) return <div className="text-red-500 mb-4 ">Failed to load statistics.</div>
   return (
     <div className="w-full">
       <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">
         Inventory Overview
       </h2>
 
-      
-
       {/* 4-Column Grid Layout */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
         {/* 1 Total products card  */}
         <StatCard
           title="Total Products"
@@ -104,7 +74,7 @@ export default function InventoryStats() {
           isLoading={isLoading}
           isClickable={true}
           isActive={currentStatus === "LOW_STOCK"}
-          onClick={()=>handleCardClick("LOW_STOCK")}
+          onClick={() => handleCardClick("LOW_STOCK")}
         />
         {/*  Out of Stock Card*/}
         <StatCard
@@ -114,11 +84,11 @@ export default function InventoryStats() {
           isLoading={isLoading}
           isClickable={true}
           isActive={currentStatus === "OUT_OF_STOCK"}
-          onClick={()=>handleCardClick("OUT_OF_STOCK")}
+          onClick={() => handleCardClick("OUT_OF_STOCK")}
         />
         <StatCard
           title="Total Value"
-          value={`₹${stats.totalValue.toLocaleString('en-IN')}`}
+          value={`₹${stats.totalValuation?.toLocaleString('en-IN') ?? 0}`}
           icon={<IndianRupeeIcon className="w-6 h-6 text-blue-500" />}
           isLoading={isLoading}
         />
