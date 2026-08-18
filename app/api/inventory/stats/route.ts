@@ -1,11 +1,12 @@
 import prisma from "@/lib/db/db";
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 // Next.js Route Segment Config for API Caching (Caches the response for 60 seconds)
 export const revalidate = 60; // seconds
 
-export async function GET(){
-    try{
+export async function GET() {
+    try {
         // Fetching all basic counts in parallel using Prisma transaction
         // Applying the exact same conditions used in the main inventory API
         const [totalProducts, lowStock, outOfStock] = await prisma.$transaction([
@@ -14,7 +15,7 @@ export async function GET(){
                 where: {
                     quantityOnHand: {
                         lte: 10,
-                        gt:0
+                        gt: 0
                     }
                 }
             }),
@@ -48,7 +49,12 @@ export async function GET(){
 
         return NextResponse.json({ totalProducts, lowStock, outOfStock, totalValuation }, { status: 200 });
     }
-    catch(error){
+    catch (error: unknown) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            if (error.code === 'P2028') {
+                return NextResponse.json({ message: "Database transaction error " }, { status: 408 })
+            }
+        }
         console.error("Error fetching inventory stats:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
