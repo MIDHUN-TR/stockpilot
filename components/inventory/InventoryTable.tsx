@@ -4,6 +4,7 @@ import { useState} from "react";
 import { DataTable, Column } from "../ui/DataTable";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
+import { ProductHistoryDrawer } from "./ProductHistoryDrawer";
 
 export interface product {
   id: number;
@@ -59,9 +60,13 @@ export default function InventoryTable() {
   // const[totalCount,setTotalCount] = useState<number>(0)
   const limit = 25; //for matching API default
 
+  // Add states for controlling the History Drawer 
+  const [isDrawerOpen,setIsDrawerOpen] = useState(false)
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+  const [selectedProductName, setSelectedProductName] = useState<string>("");
+
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("search") || "";
-
   // Get the status filter form URL
   const statusFilter = searchParams.get("status") || "";
 
@@ -88,6 +93,12 @@ export default function InventoryTable() {
   } = useSWR<ApiResponse>(apiUrl, fetcher, {
     keepPreviousData: true, //Keeps showing old data while fetching new data
   });
+
+  const handleOpenHistory = (productId: number, productName: string) => {
+    setSelectedProductId(productId);
+    setSelectedProductName(productName);
+    setIsDrawerOpen(true);
+  };
   // Extract data safely
   const inventory = response?.data || [];
   const totalCount = response?.totalCount || 0;
@@ -121,6 +132,18 @@ export default function InventoryTable() {
       header: "Reserved",
       accessor: "reservedQuantity",
     },
+    {
+      header: "Actions",
+      accessor: "id",
+      render: (item) => (
+        <button 
+          onClick={() => handleOpenHistory(item.product.id, item.product.name)}
+          className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline transition-all"
+        >
+          History
+        </button>
+      ),
+    },
   ];
 
   if (isLoading && inventory.length === 0)
@@ -142,6 +165,13 @@ export default function InventoryTable() {
           totalPage: Math.max(1, totalPages), //Ensure at least 1 page
           onPageChange: (newPage) => setPage(newPage),
         }}
+      />
+
+      <ProductHistoryDrawer 
+        isOpen={isDrawerOpen} 
+        onClose={() => setIsDrawerOpen(false)} 
+        productId={selectedProductId}
+        productName={selectedProductName}
       />
     </div>
   );
