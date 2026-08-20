@@ -4,7 +4,7 @@ import { useState} from "react";
 import { DataTable, Column } from "../ui/DataTable";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
-import { ProductHistoryDrawer } from "./ProductHistoryDrawer";
+import { StockHistoryDrawer } from "./StockHistoryDrawer";
 
 export interface product {
   id: number;
@@ -167,7 +167,7 @@ export default function InventoryTable() {
         }}
       />
 
-      <ProductHistoryDrawer 
+      <StockHistoryDrawer 
         isOpen={isDrawerOpen} 
         onClose={() => setIsDrawerOpen(false)} 
         productId={selectedProductId}

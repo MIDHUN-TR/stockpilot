@@ -21,14 +21,14 @@ export interface InventoryHistory {
 
 // Create a interface for ProductHistoryDrawerProps
 
-interface ProductHistoryDrawerProps{
+interface StockHistoryDrawerProps{
     isOpen:boolean;
     onClose:()=>void ; 
     productId:number |null;
     productName:string;
 }
 
-export function ProductHistoryDrawer({isOpen,onClose,productId,productName}:ProductHistoryDrawerProps){
+export function StockHistoryDrawer({isOpen,onClose,productId,productName}:StockHistoryDrawerProps){
     const [history,setHistory] = useState<InventoryHistory[]>([]);
     const [isLoading,setIsLoading] =useState(false);
 
