@@ -38,7 +38,10 @@ export async function POST(request: Request) {
             // calculating the product when checking E-Commerce or Sale 
             let inventoryUpdateData: Prisma.InventoryUpdateInput = {};
 
-            if (body.referenceType === "ECOMMERCE_ORDER" && body.movementType === "OUT") {
+            if (body.movementType === "ADJUSTMENT") {
+                quantityAfter = body.quantity
+                inventoryUpdateData = { quantityOnHand: quantityAfter }
+            } else if (body.referenceType === "ECOMMERCE_ORDER" && body.movementType === "OUT") {
                 // E-Commerce: Reserving the product
                 inventoryUpdateData = {
                     reservedQuantity: { increment: body.quantity }
@@ -58,10 +61,14 @@ export async function POST(request: Request) {
             }
 
             // 3. Negative Stock Validation (OverQuantity checking)
-            const availableStock = quantityBefore - (currentInventory?.reservedQuantity || 0);
+            // const availableStock = quantityBefore - (currentInventory?.reservedQuantity || 0);
+            const currentReserved = currentInventory?.reservedQuantity || 0;
+            const availableStock = quantityBefore - currentReserved
+
             if (body.movementType === "OUT" && availableStock < body.quantity) {
                 throw new Error("Insufficient stock for sale or reservation.");
             }
+            if(body.movementType === "ADJUSTMENT" && body.quantity < currentReserved){}
 
             // 4. saving history in StockMovements 
             const stockMovement = await tx.stockMovement.create({
@@ -90,7 +97,7 @@ export async function POST(request: Request) {
                 create: {
                     productId: body.productId,
                     warehouseId: body.warehouseId,
-                    quantityOnHand: body.movementType === "IN" ? body.quantity : 0,
+                    quantityOnHand: (body.movementType === "IN" || body.movementType === "ADJUSTMENT") ? body.quantity : 0,
                     reservedQuantity: body.referenceType === "ECOMMERCE_ORDER" ? body.quantity : 0
                 },
                 update: inventoryUpdateData // Passing the data we set above
@@ -98,15 +105,15 @@ export async function POST(request: Request) {
 
             return stockMovement;
         },
-        {
-            maxWait: 5000,
-            timeout: 10000
-        }
-    );
+            {
+                maxWait: 5000,
+                timeout: 10000
+            }
+        );
 
         return NextResponse.json(result, { status: 201 });
 
-    } 
+    }
     catch (error: unknown) {
         console.error("Error processing stock movement:", error);
 
@@ -121,7 +128,7 @@ export async function POST(request: Request) {
             }
             if (error.code === 'P2003') {
                 return NextResponse.json(
-                    { error: "Invalid reference: The specified Product or Warehouse does not exist." }, 
+                    { error: "Invalid reference: The specified Product or Warehouse does not exist." },
                     { status: 400 } // 400 Bad Request
                 );
             }
@@ -145,7 +152,7 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
-        
+
         //  Pagination validation (prevents NaN and negative numbers)
         const pageParam = searchParams.get("page") || "1";
         const limitParam = searchParams.get("limit") || "20";
@@ -154,7 +161,7 @@ export async function GET(request: Request) {
 
         if (isNaN(page) || page < 1 || isNaN(limit) || limit < 1) {
             return NextResponse.json(
-                { error: "Invalid pagination parameters. 'page' and 'limit' must be positive numbers." }, 
+                { error: "Invalid pagination parameters. 'page' and 'limit' must be positive numbers." },
                 { status: 400 }
             );
         }
@@ -188,7 +195,7 @@ export async function GET(request: Request) {
             const validMovementTypes = ["IN", "OUT", "ADJUSTMENT"];
             if (!validMovementTypes.includes(movementType)) {
                 return NextResponse.json(
-                    { error: `Invalid movementType. Allowed values are: ${validMovementTypes.join(", ")}` }, 
+                    { error: `Invalid movementType. Allowed values are: ${validMovementTypes.join(", ")}` },
                     { status: 400 }
                 );
             }
@@ -204,12 +211,12 @@ export async function GET(request: Request) {
                 skip: skip,
                 take: limit,
                 orderBy: {
-                    createdAt: 'desc' 
+                    createdAt: 'desc'
                 },
                 include: {
-                    product: { select: { name: true, sku: true } }, 
+                    product: { select: { name: true, sku: true } },
                     warehouse: { select: { name: true } },
-                    creator: { select: { name: true, email: true } } 
+                    creator: { select: { name: true, email: true } }
                 }
             }),
             prisma.stockMovement.count({ where: whereClause })
@@ -226,17 +233,17 @@ export async function GET(request: Request) {
 
     } catch (error: unknown) {
         console.error("Error fetching stock movements:", error);
-        
+
         // Catch Prisma-related errors
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
             return NextResponse.json(
-                { error: "A database error occurred while fetching data." }, 
+                { error: "A database error occurred while fetching data." },
                 { status: 500 }
             );
         }
 
         return NextResponse.json(
-            { error: "An unexpected error occurred while fetching stock movements." }, 
+            { error: "An unexpected error occurred while fetching stock movements." },
             { status: 500 }
         );
     }
