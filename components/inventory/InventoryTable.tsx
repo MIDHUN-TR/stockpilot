@@ -3,8 +3,9 @@
 import { useState} from "react";
 import { DataTable, Column } from "../ui/DataTable";
 import { useSearchParams } from "next/navigation";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { StockHistoryDrawer } from "./StockHistoryDrawer";
+import { DynamicModal,ModalField } from "../ui/Modal";
 
 export interface product {
   id: number;
@@ -64,6 +65,10 @@ export default function InventoryTable() {
   const [isDrawerOpen,setIsDrawerOpen] = useState(false)
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [selectedProductName, setSelectedProductName] = useState<string>("");
+
+  // States for Stock Update Modal
+  const [isStockModalOpen , setIsStockModalOpen] = useState(false)
+  const [selectedItemForStock,setSelectedItemForStock] = useState<inventoryData | null>(null)
 
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("search") || "";
@@ -136,12 +141,21 @@ export default function InventoryTable() {
       header: "Actions",
       accessor: "id",
       render: (item) => (
-        <button 
+        <div className="flex gap-4"> <button 
           onClick={() => handleOpenHistory(item.product.id, item.product.name)}
           className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline transition-all"
         >
           History
         </button>
+        <button 
+            onClick={() => handleOpenStockModal(item)}
+            className="text-green-600 hover:text-green-800 text-sm font-medium hover:underline transition-all"
+          >
+            Update Stock
+          </button>
+        </div>
+       
+        
       ),
     },
   ];
@@ -151,6 +165,96 @@ export default function InventoryTable() {
   if (error) return <div className="p-4 text-red-500">Error: {error.message}</div>;
   // Calculate total pages based on count and limit
   const totalPages = Math.ceil(totalCount / limit);
+  // Open Modal Function
+  const handleOpenStockModal = (item:inventoryData) =>{
+    setSelectedItemForStock(item)
+    setIsStockModalOpen(true)
+  }
+  // Handle Submit logic for stock API
+  const handleStockSubmit = async (formData:Record<string,string>)=>{
+    if(!selectedItemForStock) return;
+
+    try{
+      const payload = {
+        productId: selectedItemForStock.product.id,
+        warehouseId: selectedItemForStock.warehouse.id,
+        quantity: parseInt(formData.quantity, 10),
+        movementType: formData.movementType,
+        referenceType: formData.referenceType,
+        note: formData.note,
+        createdById: 1 // Hardcoded for now. Replace with actual user ID from Auth session
+      };
+      const res = await fetch("/api/stock-movements",{
+        method:"POST",
+        headers:{"Content-Type" : "application/json"},
+        body : JSON.stringify(payload)
+      })
+      if(!res.ok){
+        const errorData = await res.json()
+        throw new Error(errorData.error ||"Failed to update stock");
+
+       
+      }
+       // Close modal on success
+        setIsStockModalOpen(false);
+      setSelectedItemForStock(null);
+
+      // Revalidate both table data and stats cards to reflect the new stock instantly
+      mutate(apiUrl)
+      mutate('/api/inventory/stats');
+
+      alert("Stock updated successfully");
+
+    }catch(error){
+
+      // const errorMessage = error?.response?.data?.message || error?.message || "An unexpected error occurred while updating the stock.";
+     console.error("Actual Error:", error);
+    // console.log(errorMessage);
+}
+    }
+  
+  // Define fields for the DyanmicModal
+
+  const stockModalFields: ModalField[] = [
+    {
+      name: "movementType",
+      label: "Movement Type",
+      type: "select",
+      required: true,
+      options: [
+        { label: "Stock In (Add)", value: "IN" },
+        { label: "Stock Out (Remove)", value: "OUT" },
+        { label: "Adjustment", value: "ADJUSTMENT" }
+      ]
+    },
+    {
+      name: "quantity",
+      label: "Quantity",
+      type: "number",
+      required: true,
+      placeholder: "Enter quantity"
+    },
+    {
+      name: "referenceType",
+      label: "Reference Type",
+      type: "select",
+      required: true,
+      options: [
+        { label: "Retail Bill", value: "RETAIL_BILL" },
+        { label: "E-Commerce Order", value: "ECOMMERCE_ORDER" },
+        { label: "Manual Adjustment", value: "MANUAL_ADJUSTMENT" },
+        { label: "Internal Transfer", value: "INTERNAL_TRANSFER" },
+        { label: "Purchase Order", value: "PURCHASE_ORDER" }
+      ]
+    },
+    {
+      name: "note",
+      label: "Notes / Reason",
+      type: "textarea",
+      required: false,
+      placeholder: "Enter reason for this stock update..."
+    }
+  ];
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Inventory Overview</h2>
@@ -172,6 +276,17 @@ export default function InventoryTable() {
         onClose={() => setIsDrawerOpen(false)} 
         productId={selectedProductId}
         productName={selectedProductName}
+      />
+      <DynamicModal
+        isOpen={isStockModalOpen}
+        onClose={() => {
+          setIsStockModalOpen(false);
+          setSelectedItemForStock(null);
+        }}
+        title={`Update Stock: ${selectedItemForStock?.product.name || ''}`}
+        fields={stockModalFields}
+        onSubmit={handleStockSubmit}
+        submitButtonText="Save Stock"
       />
     </div>
   );
