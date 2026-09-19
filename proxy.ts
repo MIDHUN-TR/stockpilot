@@ -10,33 +10,34 @@ const rbacRules = [
     // Admins only
     { path: '/settings', allowedRoles: ['Admin'] },
     { path: '/api/warehouse', allowedRoles: ['Admin'] },
-    
+
     // Managers and Admins
     { path: '/inventory', allowedRoles: ['Admin', 'Manager'] },
     { path: '/api/inventory', allowedRoles: ['Admin', 'Manager'] },
-    
+
     // Everyone (assuming basic users have 'Staff' role)
     { path: '/dashboard', allowedRoles: ['Admin', 'Manager', 'Staff'] },
     { path: '/orders', allowedRoles: ['Admin', 'Manager', 'Staff'] },
     { path: '/products', allowedRoles: ['Admin', 'Manager', 'Staff'] },
     { path: '/analytics', allowedRoles: ['Admin', 'Manager', 'Staff'] },
-    
+
     // API routes
     { path: '/api/categories', allowedRoles: ['Admin', 'Manager', 'Staff'] },
     { path: '/api/products', allowedRoles: ['Admin', 'Manager', 'Staff'] },
     { path: '/api/stock-movements', allowedRoles: ['Admin', 'Manager', 'Staff'] },
+    { path: '/api/orders/:path', allowedRoles: ['Admin', 'Manager', 'Staff'] }
 ]
 
 export default async function middleware(request: NextRequest) {
-    const {pathname} = request.nextUrl
+    const { pathname } = request.nextUrl
     const token = request.cookies.get("auth_token")?.value
     //Protecting specific routes based on user roles. You can customize this list based on your application's requirements.
-    
+
     // if there is no token, redirect to login page
     if (!token) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
-    try{
+    try {
         // Verify token and get the user's role
         const payload = await verifyToken(token)
         const userRole = payload.role as string
@@ -48,7 +49,7 @@ export default async function middleware(request: NextRequest) {
         const matchedRule = rbacRules.find(rule => pathname.startsWith(rule.path))
         // If a rule exists, check if the user's role is allowed
         if (matchedRule && !matchedRule.allowedRoles.includes(userRole)) {
-             // User is logged in, but their role is not allowed here (e.g., a 'user' trying to access '/settings')
+            // User is logged in, but their role is not allowed here (e.g., a 'user' trying to access '/settings')
             return NextResponse.redirect(new URL('/unauthorized', request.url))
         }
         return NextResponse.next()
@@ -60,8 +61,8 @@ export default async function middleware(request: NextRequest) {
 }
 
 // The Gatekeeper: Only wake up the middleware for these paths
-export const config = { 
-    matcher:[
+export const config = {
+    matcher: [
         '/analytics/:path*',
         '/dashboard/:path*',
         '/inventory/:path*',
@@ -72,7 +73,8 @@ export const config = {
         '/api/inventory/:path*',
         '/api/products/:path*',
         '/api/stock-movements/:path*',
-        '/api/warehouse/:path*'
+        '/api/warehouse/:path*',
+        '/api/orders/:path*'
     ]
 }
 
