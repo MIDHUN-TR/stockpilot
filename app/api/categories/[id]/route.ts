@@ -14,7 +14,7 @@ interface RouteContext {
 
 interface BodyData {
     name?: string
-    parent_category_id?: number
+    parentCategoryId?: number
 }
 // Create a PATCH function update Category
 export async function PATCH(
@@ -40,7 +40,7 @@ export async function PATCH(
             where: { id: CategoryId },
             data: {
                 name: body.name,
-                parent_category_id: body.parent_category_id
+                parentCategoryId: body.parentCategoryId
             }
         })
 
