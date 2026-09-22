@@ -183,19 +183,20 @@ model StockMovement {
 }
 
 model Order {
-  id            Int                @id @default(autoincrement())
-  orderNumber   String             @unique
-  userId        Int?
-  customerName  String
-  totalAmount   Decimal            @db.Decimal(10, 2)
-  paymentStatus PaymentStatus      @default(Pending)
-  orderStatus   OrderStatus        @default(Pending)
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  items         OrderItem[]
-  user          User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
-  payments      Payment[]
-  reservations  StockReservation[]
+  id             Int                @id @default(autoincrement())
+  orderNumber    String             @unique
+  userId         Int?
+  customerName   String
+  totalAmount    Decimal            @db.Decimal(10, 2)
+  paymentStatus  PaymentStatus      @default(Pending)
+  orderStatus    OrderStatus        @default(Pending)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  items          OrderItem[]
+  idempotencyKey String?            @unique
+  user           User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  payments       Payment[]
+  reservations   StockReservation[]
 
   @@index([userId])
   @@map("orders")
