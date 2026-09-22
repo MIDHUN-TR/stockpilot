@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db/db";
 import bcrypt from 'bcrypt'
 
-type Data = {
-    name: string,
-    email: string,
-    password: string,
-    confirmpassword: string
-    phoneNumber:string
+interface Data {
+    name: string;
+    email: string;
+    password: string;
+    confirmpassword: string;
+    phoneNumber: string;
 }
+
+
 
 
 export async function POST(request: Request) {
