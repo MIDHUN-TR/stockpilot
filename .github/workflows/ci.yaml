@@ -5,6 +5,13 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://mock_user:mock_pass@localhost:5432/mock_db' }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL || 'postgresql://mock_user:mock_pass@localhost:5432/mock_db' }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'ci-mock-jwt-secret' }}
+      JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN || '1d' }}
+      UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL || 'https://mock-redis.upstash.io' }}
+      UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN || 'mock-redis-token' }}
     steps:
       - uses: actions/checkout@v4
       - name: setup Node.js
@@ -27,9 +34,4 @@ jobs:
 
       - name: Test production build
         run: npm run build
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://mock_user:mock_pass@localhost:5432/mock_db' }}
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'ci-mock-jwt-secret' }}
-          JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN || '1d' }}
-          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL || 'https://mock-redis.upstash.io' }}
-          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN || 'mock-redis-token' }}
+
