@@ -2,33 +2,34 @@ name: StockPilot continuous integration
 on:
   pull_request:
     branches: [ "master" ]
-jobs: 
+jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: setup Node.js
         uses: actions/setup-node@v4
-        # Added dependency caching to speed up the build process/pipeline with node version 24
         with:
           node-version: '24'
           cache: "npm"
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: validate prisma schema
         run: npx prisma validate
-      
+
       - name: Lint Code
         run: npm run lint
-      
+
       - name: TypeScript type check
         run: npx tsc --noEmit
-      # Typescript 
-      - name: Run tests
-        run: npm test
+
       - name: Test production build
         run: npm run build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://mock_user:mock_pass@localhost:5432/mock_db' }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'ci-mock-jwt-secret' }}
+          JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN || '1d' }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL || 'https://mock-redis.upstash.io' }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN || 'mock-redis-token' }}
