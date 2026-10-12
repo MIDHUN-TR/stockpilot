@@ -26,6 +26,58 @@ class OrderError extends Error {
 const RESERVATION_DURATION_MS = 30 * 60 * 1000;
 const MAX_ITEMS_PER_ORDER = 50;
 
+export async function GET(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+        const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "25")));
+        const status = searchParams.get("status") as OrderStatus | null;
+        const search = searchParams.get("search");
+        const skip = (page - 1) * limit;
+
+        const where: Prisma.OrderWhereInput = {};
+        if (status && Object.values(OrderStatus).includes(status)) {
+            where.orderStatus = status;
+        }
+        if (search) {
+            where.OR = [
+                { orderNumber: { contains: search, mode: "insensitive" } },
+                { customerName: { contains: search, mode: "insensitive" } },
+            ];
+        }
+
+        const [totalCount, orders] = await prisma.$transaction([
+            prisma.order.count({ where }),
+            prisma.order.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: "desc" },
+                select: {
+                    id: true,
+                    orderNumber: true,
+                    customerName: true,
+                    totalAmount: true,
+                    orderStatus: true,
+                    paymentStatus: true,
+                    createdAt: true,
+                    _count: { select: { items: true } },
+                },
+            }),
+        ]);
+
+        return NextResponse.json({
+            data: orders,
+            totalCount,
+            page,
+            totalPages: Math.ceil(totalCount / limit),
+        });
+    } catch (error) {
+        console.error("Orders GET Error:", error);
+        return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
+    }
+}
+
 export async function POST(request: Request) {
     try {
         const cookieStore = await cookies();
