@@ -56,8 +56,8 @@ export default function Dashboard() {
     try {
       const res = await fetch("/api/dashboard/stats");
       if (res.ok) {
-        const data = await res.json();
-        setStats(data);
+        const json = await res.json();
+        setStats(json.data);
       }
     } catch (error) {
       console.error("Failed to fetch dashboard stats:", error);
@@ -157,16 +157,19 @@ export default function Dashboard() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Total Revenue"
-          value={
-            loading
-              ? "..."
-              : `₹${Number(stats?.totalRevenue || 0).toLocaleString("en-IN")}`
-          }
-          icon={<DollarSign size={20} />}
-          isLoading={loading}
-        />
+        {/* Revenue card — only visible when the API returns revenue data (Admin/Manager) */}
+        {(loading || stats?.totalRevenue !== undefined) && (
+          <StatCard
+            title="Total Revenue"
+            value={
+              loading
+                ? "..."
+                : `₹${Number(stats?.totalRevenue || 0).toLocaleString("en-IN")}`
+            }
+            icon={<DollarSign size={20} />}
+            isLoading={loading}
+          />
+        )}
         <StatCard
           title="Orders Today"
           value={loading ? "..." : stats?.ordersToday ?? 0}

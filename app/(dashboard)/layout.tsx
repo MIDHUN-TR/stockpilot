@@ -1,177 +1,75 @@
-"use client";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { verifyToken } from "@/lib/auth/jwt";
+import { hasPermission, Permission } from "@/lib/auth/permissions";
+import { DashboardShell, NavItem } from "@/components/DashboardShell";
+import { Role } from "@prisma/client";
+import prisma from "@/lib/db/db";
+import type { PermissionKey } from "@/lib/auth/permissions";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  ShoppingCart,
-  Package,
-  BarChart3,
-  Settings,
-  Menu,
-  X,
-  LogOut,
-  ChevronLeft,
-} from "lucide-react";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/orders", label: "Orders", icon: ShoppingCart },
-  { href: "/products", label: "Products", icon: Package },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/settings", label: "Settings", icon: Settings },
+/** All possible nav items with their required permissions. */
+const ALL_NAV_ITEMS: (NavItem & { permission: PermissionKey })[] = [
+    { href: "/dashboard", label: "Dashboard", iconName: "LayoutDashboard", permission: Permission.DASHBOARD_VIEW },
+    { href: "/orders", label: "Orders", iconName: "ShoppingCart", permission: Permission.ORDER_VIEW },
+    { href: "/products", label: "Products", iconName: "Package", permission: Permission.PRODUCT_VIEW },
+    { href: "/inventory", label: "Inventory", iconName: "Warehouse", permission: Permission.INVENTORY_VIEW },
+    { href: "/analytics", label: "Analytics", iconName: "BarChart3", permission: Permission.ANALYTICS_VIEW },
+    { href: "/settings", label: "Settings", iconName: "Settings", permission: Permission.SETTINGS_VIEW },
 ];
 
-export default function DashboardLayout({
-  children,
+export default async function DashboardLayout({
+    children,
 }: {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+    // Read session from cookie
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth_token")?.value;
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      window.location.href = "/";
-    } catch (error) {
-      console.error("Logout failed:", error);
+    if (!token) {
+        redirect("/login");
     }
-  };
 
-  return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+    let userId: number;
+    let email: string;
+    let role: Role;
 
-      {/* Sidebar */}
-      <aside
-        className={`
-          fixed inset-y-0 left-0 z-50 flex flex-col
-          bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
-          transition-all duration-300 ease-in-out
-          ${collapsed ? "w-[72px]" : "w-64"}
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0 lg:static lg:z-auto
-        `}
-      >
-        {/* Logo area */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
-          {!collapsed && (
-            <Link href="/dashboard" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <Package size={18} className="text-white" />
-              </div>
-              <span className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
-                StockPilot
-              </span>
-            </Link>
-          )}
-          {collapsed && (
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center mx-auto">
-              <Package size={18} className="text-white" />
-            </div>
-          )}
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 lg:hidden"
-          >
-            <X size={20} />
-          </button>
-        </div>
+    try {
+        const payload = await verifyToken(token);
+        userId = payload.userId;
+        email = payload.email;
+        role = payload.role;
+    } catch {
+        redirect("/login");
+    }
 
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setSidebarOpen(false)}
-                title={collapsed ? item.label : undefined}
-                className={`
-                  flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
-                  transition-all duration-200 group
-                  ${
-                    isActive
-                      ? "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 shadow-sm"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
-                  }
-                `}
-              >
-                <Icon
-                  size={20}
-                  className={`shrink-0 ${
-                    isActive
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300"
-                  }`}
-                />
-                {!collapsed && <span>{item.label}</span>}
-              </Link>
-            );
-          })}
-        </nav>
+    // Fetch user name from database for the shell avatar
+    const dbUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, status: true },
+    });
 
-        {/* Bottom section */}
-        <div className="px-3 py-4 border-t border-gray-200 dark:border-gray-800 space-y-1 shrink-0">
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="hidden lg:flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            <ChevronLeft
-              size={20}
-              className={`shrink-0 transition-transform duration-300 ${
-                collapsed ? "rotate-180" : ""
-              }`}
-            />
-            {!collapsed && <span>Collapse</span>}
-          </button>
-          <button
-            onClick={handleLogout}
-            className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors ${collapsed ? "justify-center" : ""}`}
-          >
-            <LogOut size={20} className="shrink-0" />
-            {!collapsed && <span>Logout</span>}
-          </button>
-        </div>
-      </aside>
+    // If user not found or suspended, redirect to login
+    if (!dbUser || dbUser.status !== "Active") {
+        redirect("/login");
+    }
 
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top bar */}
-        <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 lg:px-6 shrink-0">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 lg:hidden"
-            >
-              <Menu size={20} />
-            </button>
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
-              {navItems.find((item) => item.href === pathname)?.label ||
-                "Dashboard"}
-            </h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold">
-              S
-            </div>
-          </div>
-        </header>
+    // Filter nav items by the user's role permissions
+    const visibleNavItems: NavItem[] = ALL_NAV_ITEMS
+        .filter((item) => hasPermission(role, item.permission))
+        .map(({ href, label, iconName }) => ({ href, label, iconName }));
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
-      </div>
-    </div>
-  );
+    return (
+        <DashboardShell
+            navItems={visibleNavItems}
+            user={{
+                name: dbUser.name,
+                email,
+                role,
+            }}
+        >
+            {children}
+        </DashboardShell>
+    );
 }
+
