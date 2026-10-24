@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { DataTable, Column } from "@/components/ui/DataTable";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { SearchInput } from "@/components/ui/SearchInput";
-import { SelectBox } from "@/components/ui/SelectBox";
-import { DynamicModal, ModalField } from "@/components/ui/Modal";
+import { DataTable, Column } from "@/src/components/ui/DataTable";
+import { StatusBadge } from "@/src/components/ui/StatusBadge";
+import { SearchInput } from "@/src/components/ui/SearchInput";
+import { SelectBox } from "@/src/components/ui/SelectBox";
+import { DynamicModal, ModalField } from "@/src/components/ui/Modal";
 import { Plus, RefreshCw } from "lucide-react";
 
 interface Product {
@@ -26,7 +26,10 @@ interface Category {
   name: string;
 }
 
-const productStatusMap: Record<string, "success" | "warning" | "error" | "info" | "default"> = {
+const productStatusMap: Record<
+  string,
+  "success" | "warning" | "error" | "info" | "default"
+> = {
   Active: "success",
   Draft: "warning",
   Discontinued: "error",
@@ -118,9 +121,26 @@ export default function Products() {
   });
 
   const createProductFields: ModalField[] = [
-    { name: "sku", label: "SKU", type: "text", required: true, placeholder: "PRD-001" },
-    { name: "name", label: "Product Name", type: "text", required: true, placeholder: "Widget Pro" },
-    { name: "description", label: "Description", type: "textarea", placeholder: "Product description..." },
+    {
+      name: "sku",
+      label: "SKU",
+      type: "text",
+      required: true,
+      placeholder: "PRD-001",
+    },
+    {
+      name: "name",
+      label: "Product Name",
+      type: "text",
+      required: true,
+      placeholder: "Widget Pro",
+    },
+    {
+      name: "description",
+      label: "Description",
+      type: "textarea",
+      placeholder: "Product description...",
+    },
     {
       name: "categoryId",
       label: "Category",
@@ -128,8 +148,20 @@ export default function Products() {
       required: true,
       options: categories.map((c) => ({ label: c.name, value: c.id })),
     },
-    { name: "price", label: "Selling Price", type: "number", required: true, placeholder: "99.99" },
-    { name: "costPrice", label: "Cost Price", type: "number", required: true, placeholder: "49.99" },
+    {
+      name: "price",
+      label: "Selling Price",
+      type: "number",
+      required: true,
+      placeholder: "99.99",
+    },
+    {
+      name: "costPrice",
+      label: "Cost Price",
+      type: "number",
+      required: true,
+      placeholder: "49.99",
+    },
   ];
 
   const columns: Column<Product>[] = [
@@ -138,8 +170,12 @@ export default function Products() {
       accessor: "name",
       render: (item) => (
         <div>
-          <p className="font-medium text-gray-900 dark:text-white">{item.name}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{item.sku}</p>
+          <p className="font-medium text-gray-900 dark:text-white">
+            {item.name}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+            {item.sku}
+          </p>
         </div>
       ),
     },
@@ -148,7 +184,10 @@ export default function Products() {
       accessor: "price",
       render: (item) => (
         <span className="font-semibold text-gray-900 dark:text-white">
-          ₹{Number(item.price).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+          ₹
+          {Number(item.price).toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+          })}
         </span>
       ),
     },
@@ -157,7 +196,10 @@ export default function Products() {
       accessor: "costPrice",
       render: (item) => (
         <span className="text-gray-600 dark:text-gray-400">
-          ₹{Number(item.costPrice).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+          ₹
+          {Number(item.costPrice).toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+          })}
         </span>
       ),
     },
@@ -165,7 +207,10 @@ export default function Products() {
       header: "Status",
       accessor: "status",
       render: (item) => (
-        <StatusBadge status={productStatusMap[item.status] || "default"} size="sm">
+        <StatusBadge
+          status={productStatusMap[item.status] || "default"}
+          size="sm"
+        >
           {item.status}
         </StatusBadge>
       ),
@@ -174,7 +219,11 @@ export default function Products() {
       header: "Active",
       accessor: "isActive",
       render: (item) => (
-        <StatusBadge status={item.isActive ? "success" : "default"} size="sm" icon={false}>
+        <StatusBadge
+          status={item.isActive ? "success" : "default"}
+          size="sm"
+          icon={false}
+        >
           {item.isActive ? "Yes" : "No"}
         </StatusBadge>
       ),
@@ -204,7 +253,9 @@ export default function Products() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Products</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Products
+          </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Manage your product catalog ({filtered.length} products)
           </p>
@@ -248,7 +299,10 @@ export default function Products() {
       {loading ? (
         <div className="animate-pulse space-y-2">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-14 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+            <div
+              key={i}
+              className="h-14 bg-gray-200 dark:bg-gray-800 rounded-lg"
+            />
           ))}
         </div>
       ) : (

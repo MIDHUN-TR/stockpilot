@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db/db";
 import { Prisma, OrderStatus, PaymentStatus, StockReservationStatus } from "@prisma/client";
-import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/auth/jwt";
 import { orderRateLimiter } from "@/lib/redis/ratelimit";
+import { authorizeRequest } from "@/lib/helpers/auth-guard";
+import { Permission } from "@/lib/auth/permissions";
 
 export interface OrderItemPayload {
     productId: number;
@@ -27,6 +27,9 @@ const RESERVATION_DURATION_MS = 30 * 60 * 1000;
 const MAX_ITEMS_PER_ORDER = 50;
 
 export async function GET(request: Request) {
+    const [user, errorResponse] = await authorizeRequest(Permission.ORDER_VIEW);
+    if (!user) return errorResponse;
+
     try {
         const { searchParams } = new URL(request.url);
         const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
@@ -79,20 +82,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-    try {
-        const cookieStore = await cookies();
-        const token = cookieStore.get("auth_token")?.value;
-        if (!token) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const [user, errorResponse] = await authorizeRequest(Permission.ORDER_CREATE);
+    if (!user) return errorResponse;
 
-        let authenticationUserId: number;
-        try {
-            const payload = await verifyToken(token);
-            authenticationUserId = payload.userId as number;
-        } catch {
-            return NextResponse.json({ error: "Invalid or expired session" }, { status: 401 });
-        }
+    try {
+        const authenticationUserId = user.userId;
 
         const identifier = `user${authenticationUserId}`;
         const { success, limit, reset, remaining } = await orderRateLimiter.limit(identifier);

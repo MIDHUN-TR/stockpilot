@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { StatCard } from "@/components/ui/StatCard";
-import { DataTable, Column } from "@/components/ui/DataTable";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatCard } from "@/src/components/ui/StatCard";
+import { DataTable, Column } from "@/src/components/ui/DataTable";
+import { StatusBadge } from "@/src/components/ui/StatusBadge";
 import {
   DollarSign,
   ShoppingCart,
@@ -39,7 +39,10 @@ interface LowStockItem {
   warehouse: { id: number; name: string; code: string };
 }
 
-const orderStatusMap: Record<string, "success" | "warning" | "error" | "info" | "default"> = {
+const orderStatusMap: Record<
+  string,
+  "success" | "warning" | "error" | "info" | "default"
+> = {
   Pending: "warning",
   Processing: "info",
   Shipped: "info",
@@ -78,7 +81,10 @@ export default function Dashboard() {
       accessor: "totalAmount",
       render: (item) => (
         <span className="font-semibold text-gray-900 dark:text-white">
-          ₹{Number(item.totalAmount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+          ₹
+          {Number(item.totalAmount).toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+          })}
         </span>
       ),
     },
@@ -86,7 +92,10 @@ export default function Dashboard() {
       header: "Status",
       accessor: "orderStatus",
       render: (item) => (
-        <StatusBadge status={orderStatusMap[item.orderStatus] || "default"} size="sm">
+        <StatusBadge
+          status={orderStatusMap[item.orderStatus] || "default"}
+          size="sm"
+        >
           {item.orderStatus}
         </StatusBadge>
       ),
@@ -112,12 +121,20 @@ export default function Dashboard() {
       accessor: "id",
       render: (item) => (
         <div>
-          <p className="font-medium text-gray-900 dark:text-white">{item.product.name}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">{item.product.sku}</p>
+          <p className="font-medium text-gray-900 dark:text-white">
+            {item.product.name}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {item.product.sku}
+          </p>
         </div>
       ),
     },
-    { header: "Warehouse", accessor: "id", render: (item) => item.warehouse.name },
+    {
+      header: "Warehouse",
+      accessor: "id",
+      render: (item) => item.warehouse.name,
+    },
     {
       header: "Stock",
       accessor: "quantityOnHand",
@@ -172,7 +189,7 @@ export default function Dashboard() {
         )}
         <StatCard
           title="Orders Today"
-          value={loading ? "..." : stats?.ordersToday ?? 0}
+          value={loading ? "..." : (stats?.ordersToday ?? 0)}
           icon={<ShoppingCart size={20} />}
           isLoading={loading}
           trend={{
@@ -183,7 +200,7 @@ export default function Dashboard() {
         />
         <StatCard
           title="Low Stock Alerts"
-          value={loading ? "..." : stats?.lowStockCount ?? 0}
+          value={loading ? "..." : (stats?.lowStockCount ?? 0)}
           icon={<AlertTriangle size={20} />}
           isLoading={loading}
           trend={
@@ -194,7 +211,7 @@ export default function Dashboard() {
         />
         <StatCard
           title="Total Orders"
-          value={loading ? "..." : stats?.totalOrders ?? 0}
+          value={loading ? "..." : (stats?.totalOrders ?? 0)}
           icon={<Package size={20} />}
           isLoading={loading}
         />
@@ -218,11 +235,17 @@ export default function Dashboard() {
           {loading ? (
             <div className="animate-pulse space-y-2">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+                <div
+                  key={i}
+                  className="h-12 bg-gray-200 dark:bg-gray-800 rounded-lg"
+                />
               ))}
             </div>
           ) : (
-            <DataTable data={stats?.recentOrders || []} columns={orderColumns} />
+            <DataTable
+              data={stats?.recentOrders || []}
+              columns={orderColumns}
+            />
           )}
         </div>
 
@@ -242,11 +265,17 @@ export default function Dashboard() {
           {loading ? (
             <div className="animate-pulse space-y-2">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+                <div
+                  key={i}
+                  className="h-12 bg-gray-200 dark:bg-gray-800 rounded-lg"
+                />
               ))}
             </div>
           ) : (
-            <DataTable data={stats?.lowStockItems || []} columns={lowStockColumns} />
+            <DataTable
+              data={stats?.lowStockItems || []}
+              columns={lowStockColumns}
+            />
           )}
         </div>
       </div>

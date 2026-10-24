@@ -1,14 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { StatCard } from "@/components/ui/StatCard";
-import { DataTable, Column } from "@/components/ui/DataTable";
-import {
-  TrendingUp,
-  BarChart3,
-  ShoppingCart,
-  RefreshCw,
-} from "lucide-react";
+import { StatCard } from "@/src/components/ui/StatCard";
+import { DataTable, Column } from "@/src/components/ui/DataTable";
+import { TrendingUp, BarChart3, ShoppingCart, RefreshCw } from "lucide-react";
 
 interface RevenueDay {
   date: string;
@@ -65,13 +60,16 @@ export default function Analytics() {
     fetchAnalytics();
   }, []);
 
-  const totalRevenue = data?.revenueByDay.reduce((sum, d) => sum + Number(d.revenue), 0) ?? 0;
-  const totalOrders = data?.revenueByDay.reduce((sum, d) => sum + d.count, 0) ?? 0;
+  const totalRevenue =
+    data?.revenueByDay.reduce((sum, d) => sum + Number(d.revenue), 0) ?? 0;
+  const totalOrders =
+    data?.revenueByDay.reduce((sum, d) => sum + d.count, 0) ?? 0;
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-  const maxDayRevenue = data?.revenueByDay.reduce(
-    (max, d) => (Number(d.revenue) > max ? Number(d.revenue) : max),
-    0
-  ) ?? 1;
+  const maxDayRevenue =
+    data?.revenueByDay.reduce(
+      (max, d) => (Number(d.revenue) > max ? Number(d.revenue) : max),
+      0,
+    ) ?? 1;
 
   const topProductColumns: Column<TopProduct>[] = [
     {
@@ -80,8 +78,12 @@ export default function Analytics() {
       render: (item) =>
         item.product ? (
           <div>
-            <p className="font-medium text-gray-900 dark:text-white">{item.product.name}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{item.product.sku}</p>
+            <p className="font-medium text-gray-900 dark:text-white">
+              {item.product.name}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+              {item.product.sku}
+            </p>
           </div>
         ) : (
           <span className="text-gray-400">Unknown</span>
@@ -91,14 +93,18 @@ export default function Analytics() {
       header: "Orders",
       accessor: "orderCount",
       render: (item) => (
-        <span className="font-semibold text-gray-900 dark:text-white">{item.orderCount}</span>
+        <span className="font-semibold text-gray-900 dark:text-white">
+          {item.orderCount}
+        </span>
       ),
     },
     {
       header: "Qty Sold",
       accessor: "totalQuantity",
       render: (item) => (
-        <span className="text-gray-700 dark:text-gray-300">{item.totalQuantity}</span>
+        <span className="text-gray-700 dark:text-gray-300">
+          {item.totalQuantity}
+        </span>
       ),
     },
     {
@@ -106,7 +112,10 @@ export default function Analytics() {
       accessor: "totalRevenue",
       render: (item) => (
         <span className="font-semibold text-gray-900 dark:text-white">
-          ₹{Number(item.totalRevenue).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+          ₹
+          {Number(item.totalRevenue).toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+          })}
         </span>
       ),
     },
@@ -117,7 +126,9 @@ export default function Analytics() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Analytics</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Analytics
+          </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Last 30 days performance overview
           </p>
@@ -148,7 +159,11 @@ export default function Analytics() {
         />
         <StatCard
           title="Avg Order Value"
-          value={loading ? "..." : `₹${avgOrderValue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`}
+          value={
+            loading
+              ? "..."
+              : `₹${avgOrderValue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`
+          }
           icon={<BarChart3 size={20} />}
           isLoading={loading}
         />
@@ -162,20 +177,31 @@ export default function Analytics() {
         {loading ? (
           <div className="animate-pulse h-48 bg-gray-200 dark:bg-gray-800 rounded-lg" />
         ) : data?.revenueByDay.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-12">No data available</p>
+          <p className="text-gray-500 dark:text-gray-400 text-center py-12">
+            No data available
+          </p>
         ) : (
           <div className="flex items-end gap-1 h-48 overflow-x-auto pb-2">
             {data?.revenueByDay.map((day) => {
-              const height = maxDayRevenue > 0 ? (Number(day.revenue) / maxDayRevenue) * 100 : 0;
+              const height =
+                maxDayRevenue > 0
+                  ? (Number(day.revenue) / maxDayRevenue) * 100
+                  : 0;
               return (
-                <div key={day.date} className="flex flex-col items-center gap-1 min-w-[24px] flex-1 group">
+                <div
+                  key={day.date}
+                  className="flex flex-col items-center gap-1 min-w-[24px] flex-1 group"
+                >
                   <div
                     className="w-full bg-blue-500 dark:bg-blue-400 rounded-t-sm transition-all duration-300 hover:bg-blue-600 dark:hover:bg-blue-300 relative"
                     style={{ height: `${Math.max(height, 2)}%` }}
                     title={`${day.date}: ₹${Number(day.revenue).toLocaleString("en-IN")} (${day.count} orders)`}
                   />
                   <span className="text-[9px] text-gray-400 dark:text-gray-500 rotate-[-45deg] origin-top-left whitespace-nowrap hidden sm:block">
-                    {new Date(day.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                    {new Date(day.date).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                    })}
                   </span>
                 </div>
               );
@@ -193,11 +219,17 @@ export default function Analytics() {
           {loading ? (
             <div className="animate-pulse space-y-2">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+                <div
+                  key={i}
+                  className="h-12 bg-gray-200 dark:bg-gray-800 rounded-lg"
+                />
               ))}
             </div>
           ) : (
-            <DataTable data={data?.topProducts || []} columns={topProductColumns} />
+            <DataTable
+              data={data?.topProducts || []}
+              columns={topProductColumns}
+            />
           )}
         </div>
 
@@ -209,13 +241,19 @@ export default function Analytics() {
           {loading ? (
             <div className="animate-pulse space-y-3">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-8 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+                <div
+                  key={i}
+                  className="h-8 bg-gray-200 dark:bg-gray-800 rounded-lg"
+                />
               ))}
             </div>
           ) : (
             <div className="space-y-3">
               {data?.ordersByStatus.map((s) => {
-                const total = data.ordersByStatus.reduce((sum, st) => sum + st.count, 0);
+                const total = data.ordersByStatus.reduce(
+                  (sum, st) => sum + st.count,
+                  0,
+                );
                 const pct = total > 0 ? (s.count / total) * 100 : 0;
                 return (
                   <div key={s.status} className="flex items-center gap-3">

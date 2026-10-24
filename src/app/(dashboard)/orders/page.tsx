@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { DataTable, Column } from "@/components/ui/DataTable";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { SearchInput } from "@/components/ui/SearchInput";
-import { SelectBox } from "@/components/ui/SelectBox";
-import { DynamicModal, ModalField } from "@/components/ui/Modal";
+import { DataTable, Column } from "@/src/components/ui/DataTable";
+import { StatusBadge } from "@/src/components/ui/StatusBadge";
+import { SearchInput } from "@/src/components/ui/SearchInput";
+import { SelectBox } from "@/src/components/ui/SelectBox";
+import { DynamicModal, ModalField } from "@/src/components/ui/Modal";
 import { Plus, RefreshCw } from "lucide-react";
 
 interface Order {
@@ -35,7 +35,10 @@ const statusOptions = [
   { value: "Cancelled", label: "Cancelled" },
 ];
 
-const orderStatusMap: Record<string, "success" | "warning" | "error" | "info" | "default"> = {
+const orderStatusMap: Record<
+  string,
+  "success" | "warning" | "error" | "info" | "default"
+> = {
   Pending: "warning",
   Processing: "info",
   Shipped: "info",
@@ -43,7 +46,10 @@ const orderStatusMap: Record<string, "success" | "warning" | "error" | "info" | 
   Cancelled: "error",
 };
 
-const paymentStatusMap: Record<string, "success" | "warning" | "error" | "info" | "default"> = {
+const paymentStatusMap: Record<
+  string,
+  "success" | "warning" | "error" | "info" | "default"
+> = {
   Pending: "warning",
   Success: "success",
   Failed: "error",
@@ -51,10 +57,34 @@ const paymentStatusMap: Record<string, "success" | "warning" | "error" | "info" 
 };
 
 const createOrderFields: ModalField[] = [
-  { name: "customerName", label: "Customer Name", type: "text", required: true, placeholder: "John Doe" },
-  { name: "productId", label: "Product ID", type: "number", required: true, placeholder: "1" },
-  { name: "warehouseId", label: "Warehouse ID", type: "number", required: true, placeholder: "1" },
-  { name: "quantity", label: "Quantity", type: "number", required: true, placeholder: "5" },
+  {
+    name: "customerName",
+    label: "Customer Name",
+    type: "text",
+    required: true,
+    placeholder: "John Doe",
+  },
+  {
+    name: "productId",
+    label: "Product ID",
+    type: "number",
+    required: true,
+    placeholder: "1",
+  },
+  {
+    name: "warehouseId",
+    label: "Warehouse ID",
+    type: "number",
+    required: true,
+    placeholder: "1",
+  },
+  {
+    name: "quantity",
+    label: "Quantity",
+    type: "number",
+    required: true,
+    placeholder: "5",
+  },
 ];
 
 export default function Orders() {
@@ -140,7 +170,10 @@ export default function Orders() {
       accessor: "totalAmount",
       render: (item) => (
         <span className="font-semibold text-gray-900 dark:text-white">
-          ₹{Number(item.totalAmount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+          ₹
+          {Number(item.totalAmount).toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+          })}
         </span>
       ),
     },
@@ -148,14 +181,19 @@ export default function Orders() {
       header: "Items",
       accessor: "id",
       render: (item) => (
-        <span className="text-gray-600 dark:text-gray-300">{item._count.items}</span>
+        <span className="text-gray-600 dark:text-gray-300">
+          {item._count.items}
+        </span>
       ),
     },
     {
       header: "Order Status",
       accessor: "orderStatus",
       render: (item) => (
-        <StatusBadge status={orderStatusMap[item.orderStatus] || "default"} size="sm">
+        <StatusBadge
+          status={orderStatusMap[item.orderStatus] || "default"}
+          size="sm"
+        >
           {item.orderStatus}
         </StatusBadge>
       ),
@@ -164,7 +202,10 @@ export default function Orders() {
       header: "Payment",
       accessor: "paymentStatus",
       render: (item) => (
-        <StatusBadge status={paymentStatusMap[item.paymentStatus] || "default"} size="sm">
+        <StatusBadge
+          status={paymentStatusMap[item.paymentStatus] || "default"}
+          size="sm"
+        >
           {item.paymentStatus}
         </StatusBadge>
       ),
@@ -189,7 +230,9 @@ export default function Orders() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Orders</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Orders
+          </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Manage and track all your orders
           </p>
@@ -239,7 +282,10 @@ export default function Orders() {
       {loading ? (
         <div className="animate-pulse space-y-2">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-14 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+            <div
+              key={i}
+              className="h-14 bg-gray-200 dark:bg-gray-800 rounded-lg"
+            />
           ))}
         </div>
       ) : (

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { DataTable, Column } from "@/components/ui/DataTable";
-import { DynamicModal, ModalField } from "@/components/ui/Modal";
+import { DataTable, Column } from "@/src/components/ui/DataTable";
+import { DynamicModal, ModalField } from "@/src/components/ui/Modal";
 import { Plus, Building2, User, RefreshCw } from "lucide-react";
 
 interface Warehouse {
@@ -14,9 +14,26 @@ interface Warehouse {
 }
 
 const warehouseFields: ModalField[] = [
-  { name: "code", label: "Warehouse Code", type: "text", required: true, placeholder: "WH-001" },
-  { name: "name", label: "Warehouse Name", type: "text", required: true, placeholder: "Main Warehouse" },
-  { name: "location", label: "Location", type: "text", placeholder: "Mumbai, India" },
+  {
+    name: "code",
+    label: "Warehouse Code",
+    type: "text",
+    required: true,
+    placeholder: "WH-001",
+  },
+  {
+    name: "name",
+    label: "Warehouse Name",
+    type: "text",
+    required: true,
+    placeholder: "Main Warehouse",
+  },
+  {
+    name: "location",
+    label: "Location",
+    type: "text",
+    placeholder: "Mumbai, India",
+  },
 ];
 
 export default function SettingsPage() {
@@ -111,7 +128,9 @@ export default function SettingsPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Settings
+        </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Manage your account and application preferences
         </p>
@@ -196,7 +215,10 @@ export default function SettingsPage() {
         {loading ? (
           <div className="animate-pulse space-y-2">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+              <div
+                key={i}
+                className="h-12 bg-gray-200 dark:bg-gray-800 rounded-lg"
+              />
             ))}
           </div>
         ) : (
