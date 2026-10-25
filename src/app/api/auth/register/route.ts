@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/src/lib/db/db";
+import prisma from "@/lib/db/db";
 import bcrypt from 'bcrypt'
 
 interface Data {
