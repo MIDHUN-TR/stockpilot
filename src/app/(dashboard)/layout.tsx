@@ -1,11 +1,11 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { verifyToken } from "@/src/lib/auth/jwt";
-import { hasPermission, Permission } from "@/src/lib/auth/permissions";
-import { DashboardShell, NavItem } from "@/src/components/DashboardShell";
+import { verifyToken } from "@/lib/auth/jwt";
+import { hasPermission, Permission } from "@/lib/auth/permissions";
+import { DashboardShell, NavItem } from "@/components/DashboardShell";
 import { Role } from "@prisma/client";
-import prisma from "@/src/lib/db/db";
-import type { PermissionKey } from "@/src/lib/auth/permissions";
+import prisma from "@/lib/db/db";
+import type { PermissionKey } from "@/lib/auth/permissions";
 
 /** All possible nav items with their required permissions. */
 const ALL_NAV_ITEMS: (NavItem & { permission: PermissionKey })[] = [
