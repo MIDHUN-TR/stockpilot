@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { StatCard } from "@/src/components/ui/StatCard";
-import { DataTable, Column } from "@/src/components/ui/DataTable";
+import { StatCard } from "@/components/ui/StatCard";
+import { DataTable, Column } from "@/components/ui/DataTable";
 import { TrendingUp, BarChart3, ShoppingCart, RefreshCw } from "lucide-react";
 
 interface RevenueDay {
