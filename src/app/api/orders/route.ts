@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import prisma from "@/src/lib/db/db";
+import prisma from "@/lib/db/db";
 import { Prisma, OrderStatus, PaymentStatus, StockReservationStatus } from "@prisma/client";
 import { cookies } from "next/headers";
-import { verifyToken } from "@/src/lib/auth/jwt";
-import { orderRateLimiter } from "@/src/lib/redis/ratelimit";
+import { verifyToken } from "@/lib/auth/jwt";
+import { orderRateLimiter } from "@/lib/redis/ratelimit";
 
 export interface OrderItemPayload {
     productId: number;
