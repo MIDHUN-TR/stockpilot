@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { DataTable, Column } from "@/src/components/ui/DataTable";
-import { DynamicModal, ModalField } from "@/src/components/ui/Modal";
+import { DataTable, Column } from "@/components/ui/DataTable";
+import { DynamicModal, ModalField } from "@/components/ui/Modal";
 import { Plus, Building2, User, RefreshCw } from "lucide-react";
 
 interface Warehouse {
