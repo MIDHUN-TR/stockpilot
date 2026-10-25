@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import prisma from "@/src/lib/db/db";
+import prisma from "@/lib/db/db";
 import bcrypt from "bcrypt"; // Fixed typo from 'becrypt'
-import { generateToken } from "@/src/lib/auth/jwt";
+import { generateToken } from "@/lib/auth/jwt";
 import { Prisma } from "@prisma/client";
 
 
