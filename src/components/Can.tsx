@@ -1,7 +1,7 @@
 "use client";
 
 import { Role } from "@prisma/client";
-import { hasPermission, PermissionKey } from "@/src/lib/auth/permissions";
+import { hasPermission, PermissionKey } from "@/lib/auth/permissions";
 
 interface CanProps {
   role: Role;
