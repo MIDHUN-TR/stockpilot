@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 // importing jwt token verification and role types from lib/auth/jwt.ts
-import { verifyToken } from "./lib/auth/jwt"
+import { verifyToken } from "./src/lib/auth/jwt"
 
 
 // Define RBAC Logic: Map specific routes to allowed roles.
