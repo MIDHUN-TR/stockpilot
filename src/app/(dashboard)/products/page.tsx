@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { DataTable, Column } from "@/src/components/ui/DataTable";
-import { StatusBadge } from "@/src/components/ui/StatusBadge";
-import { SearchInput } from "@/src/components/ui/SearchInput";
-import { SelectBox } from "@/src/components/ui/SelectBox";
-import { DynamicModal, ModalField } from "@/src/components/ui/Modal";
+import { DataTable, Column } from "@/components/ui/DataTable";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { SelectBox } from "@/components/ui/SelectBox";
+import { DynamicModal, ModalField } from "@/components/ui/Modal";
 import { Plus, RefreshCw } from "lucide-react";
 
 interface Product {
