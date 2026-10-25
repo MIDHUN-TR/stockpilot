@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
-import { verifyToken, UserTokenPayload } from "@/src/lib/auth/jwt";
+import { verifyToken, UserTokenPayload } from "@/lib/auth/jwt";
 import { NextResponse } from "next/server";
-import { hasPermission, PermissionKey } from "@/src/lib/auth/permissions";
+import { hasPermission, PermissionKey } from "@/lib/auth/permissions";
 
 /**
  * Verifies the auth_token cookie and returns the user payload.
