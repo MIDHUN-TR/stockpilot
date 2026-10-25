@@ -1,5 +1,5 @@
 // Importing the db from 
-import prisma from "@/src/lib/db/db";
+import prisma from "@/lib/db/db";
 // Importing Prisma client
 import { Prisma } from "@prisma/client";
 // imported NextResponse for responses
