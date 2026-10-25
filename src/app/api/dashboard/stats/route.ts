@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import prisma from "@/src/lib/db/db";
-import { authorizeRequest } from "@/src/lib/helpers/auth-guard";
-import { Permission, hasPermission } from "@/src/lib/auth/permissions";
+import prisma from "@/lib/db/db";
+import { authorizeRequest } from "@/lib/helpers/auth-guard";
+import { Permission, hasPermission } from "@/lib/auth/permissions";
 
 export const dynamic = "force-dynamic";
 
