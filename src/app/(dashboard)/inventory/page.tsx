@@ -1,9 +1,9 @@
 "use client";
 
 import { Suspense } from "react";
-import InventoryFilter from "@/src/components/inventory/InventoryFillter";
-import InventoryStats from "@/src/components/inventory/InventoryStats";
-import InventoryTable from "@/src/components/inventory/InventoryTable";
+import InventoryFilter from "@/components/inventory/InventoryFillter";
+import InventoryStats from "@/components/inventory/InventoryStats";
+import InventoryTable from "@/components/inventory/InventoryTable";
 
 export default function Inventory() {
   return (
