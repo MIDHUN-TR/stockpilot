@@ -1,4 +1,5 @@
 # SSOT: Stockpilot
+Project Stockpilot is designed to demonstrate the developer's coding skills. The project encompasses integrating artificial intelligence into company performance analysis and processing natural language questions. The application targets three user roles: Administrators, Managers, and Staff. This document serves as the Single Source of Truth (SSOT) for all system requirements, workflow rules, and API definitions to ensure cross-functional alignment and eliminate data discrepancies.
 
 ## 1. Stack & CLI
 - **Stack:** Next.js 16.4 (App Router), Node 24, TS (Strict). Tailwind, shadcn/ui (ZERO custom CSS). PostgreSQL, Prisma, React Query, Zustand, Redis. Auth.js, Cloudinary, Razorpay, n8n. Vercel, Docker, Vitest, Playwright.
@@ -41,7 +42,7 @@ Restricted strictly to:
   - Error: `{ success: false, error: "safe string" }` (ZERO raw errors/traces).
 
 ## 7. ZERO-TRUST Destructive Ops
-- **DB Records:** Soft deletes ONLY (`deletedAt` / `isActive: false`). NO `.delete()`.
+- **DB Records:**  NO `.delete()`.
 - **DB Schema:** NO `prisma db push --force-reset` or `migrate reset`.
 - **System:** NO `rm -rf`, `fs.unlink`, `git push --force`, or history rewrite.
 - **Protocol:** If destruction is mathematically required, HALT and prompt user.
