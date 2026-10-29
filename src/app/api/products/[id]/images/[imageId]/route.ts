@@ -3,10 +3,11 @@ import prisma from "@/lib/db/db";
 import { authorizeRequest } from "@/lib/helpers/auth-guard";
 import { Permission } from "@/lib/auth/permissions";
 import { productImageUpdateSchema } from "@/zod/productImageSchema";
+import { deleteImage } from "@/lib/cloudinary/cloudinary";
 
 import type {
   ProductImageSingleResponse,
-
+  ProductImageDeleteResponse,
   ProductImageErrorResponse,
 } from "@/types/productImage";
 
@@ -127,4 +128,80 @@ export async function PATCH(
 }
 
 
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string; imageId: string }> },
+): Promise<NextResponse<ProductImageDeleteResponse | ProductImageErrorResponse>> {
+  const [, errorResponse] = await authorizeRequest(Permission.PRODUCT_EDIT);
+  if (errorResponse)
+    return errorResponse as NextResponse<ProductImageErrorResponse>;
+
+
+  const resolvedParams = await params;
+  const productId = Number(resolvedParams.id);
+  const imageId = Number(resolvedParams.imageId);
+
+
+  if (Number.isNaN(productId) || productId <= 0 || !Number.isInteger(productId)) {
+    return NextResponse.json(
+      { success: false as const, error: "Invalid product ID" },
+      { status: 400 },
+    );
+  }
+
+
+  if (Number.isNaN(imageId) || imageId <= 0 || !Number.isInteger(imageId)) {
+    return NextResponse.json(
+      { success: false as const, error: "Invalid image ID" },
+      { status: 400 },
+    );
+  }
+
+
+  try {
+    // ---------- Verify image belongs to the product ----------
+    const existingImage = await prisma.productImage.findUnique({
+      where: { id: imageId },
+      select: { productId: true, publicId: true },
+    });
+
+
+    if (!existingImage) {
+      return NextResponse.json(
+        { success: false as const, error: "Image not found" },
+        { status: 404 },
+      );
+    }
+
+
+    if (existingImage.productId !== productId) {
+      return NextResponse.json(
+        { success: false as const, error: "Image does not belong to this product" },
+        { status: 404 },
+      );
+    }
+
+
+    // ---------- Delete from Cloudinary ----------
+    await deleteImage(existingImage.publicId);
+
+
+    // ---------- Delete DB record ----------
+    await prisma.productImage.delete({
+      where: { id: imageId },
+    });
+
+
+    return NextResponse.json({
+      success: true as const,
+      data: { id: imageId },
+    });
+  } catch (error) {
+    console.error("Product image delete error:", error);
+    return NextResponse.json(
+      { success: false as const, error: "Failed to delete product image" },
+      { status: 500 },
+    );
+  }
+}
 
